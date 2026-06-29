@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+
+<h2>Pay ₹{{ amount }} for {{ member.name }}</h2>
+
+<button id="pay-btn">Pay Now</button>
+
+<script>
+var options = {
+    "key": "rzp_test_T7Uqz37x8YboyU",
+    "amount": "{{ order['amount'] }}",
+    "currency": "INR",
+    "name": "Garud Zep Gym",
+    "description": "{{ member.plan }}",
+    "order_id": "{{ order['id'] }}",
+
+    "prefill": {
+        "name": "{{ member.name }}",
+        "contact": "{{ member.phone }}"
+    },
+
+    "theme": {
+        "color": "#ff0000"
+    },
+
+    "handler": function (response) {
+        window.location.href = "/payment-success/{{ member.id }}";
+    }
+};
+
+var rzp = new Razorpay(options);
+
+rzp.on('payment.failed', function (response){
+    alert(response.error.description);
+    console.log(response.error);
+});
+
+document.getElementById('pay-btn').onclick = function(e){
+    rzp.open();
+    e.preventDefault();
+}
+</script>
+
+</body>
+</html>
