@@ -921,3 +921,11 @@ margin:10px auto;
         rgba(255,0,0,0.35)
     );
 }
+
+.trainer-overlay h3{
+    font-weight:700;
+}
+
+.trainer-overlay p{
+    color:white;
+}
