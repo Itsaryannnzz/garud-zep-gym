@@ -929,3 +929,43 @@ margin:10px auto;
 .trainer-overlay p{
     color:white;
 }
+/* FINAL MOBILE WIDTH FIX */
+@media (max-width: 768px) {
+
+    html,
+    body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden !important;
+    }
+
+    #home,
+    #gymSlider,
+    .carousel,
+    .carousel-inner,
+    .carousel-item {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        overflow: hidden !important;
+    }
+
+    .carousel-img {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: 85vh !important;
+        object-fit: cover !important;
+        transform: none !important;
+        animation: none !important;
+    }
+
+    .navbar {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        overflow: hidden !important;
+    }
+
+    .container {
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+    }
+}
