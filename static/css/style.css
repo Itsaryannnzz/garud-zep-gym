@@ -917,7 +917,7 @@ margin:10px auto;
 .trainer-overlay{
     background: linear-gradient(
         to top,
-        rgba(255,0,0,0.75),
+        rgba(71, 112, 178, 0.75),
         rgba(255,0,0,0.35)
     );
 }
