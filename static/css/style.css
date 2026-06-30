@@ -872,4 +872,30 @@ margin:10px auto;
 .custom-navbar {
     z-index: 99999 !important;
     background: rgba(0,0,0,0.95) !important;
+}/* FORCE MOBILE MENU BUTTON VISIBLE */
+@media (max-width: 991px) {
+    .custom-navbar {
+        background: rgba(0,0,0,0.95) !important;
+        z-index: 999999 !important;
+    }
+
+    .navbar-toggler {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        border: 2px solid red !important;
+        background: red !important;
+        position: absolute !important;
+        right: 15px !important;
+        top: 18px !important;
+        z-index: 1000000 !important;
+    }
+
+    .navbar-toggler-icon {
+        filter: invert(1) !important;
+    }
+
+    .navbar-brand {
+        padding-right: 70px;
+    }
 }
