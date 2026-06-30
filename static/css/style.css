@@ -592,112 +592,340 @@ margin:10px auto;
     border:none;
     border-radius:30px;
 }
-@media (max-width:768px){
-
-html,body{
-overflow-x:hidden;
-max-width:100%;
-}
-
-.carousel-img{
-height:85vh;
-animation:none;
-transform:none !important;
-}
-
-.carousel-caption{
-bottom:18%;
-padding:0 15px;
-}
-
-.carousel-caption h1{
-font-size:32px;
-}
-
-.carousel-caption p{
-font-size:14px;
-}
-
-.navbar-brand{
-font-size:24px;
-}
-
-.navbar-toggler{
-background:red;
-border:none;
-padding:8px;
-}
-
-.section-space{
-padding:60px 0;
-}
-
-.program-card,
-.pricing-card{
-margin-bottom:20px;
-}
-
-.trainer-img{
-height:300px;
-}
-
-.trainer-overlay{
-bottom:0;
-}
-
-.gallery-img{
-height:250px;
-}
-
-.login-box,
-.membership-box,
-.dashboard-card{
-padding:25px;
-max-width:100%;
-}
-
-.container{
-overflow:hidden;
-}
-
-}
-/* FINAL MOBILE WIDTH FIX */
+/* FULL MOBILE RESPONSIVE FIX */
 @media (max-width: 768px) {
 
-    html,
     body {
-        width: 100%;
-        max-width: 100%;
-        overflow-x: hidden !important;
+        overflow-x: hidden;
     }
 
-    #home,
-    #gymSlider,
-    .carousel,
-    .carousel-inner,
-    .carousel-item {
-        width: 100vw !important;
-        max-width: 100vw !important;
-        overflow: hidden !important;
+    .custom-navbar {
+        padding: 10px 0;
+    }
+
+    .navbar-brand {
+        font-size: 22px;
+    }
+
+    .nav-link {
+        margin-left: 0;
+        text-align: center;
+        padding: 10px;
+    }
+
+    .nav-login {
+        display: block;
+        width: 170px;
+        margin: 8px auto;
     }
 
     .carousel-img {
-        width: 100vw !important;
-        max-width: 100vw !important;
-        height: 85vh !important;
-        object-fit: cover !important;
-        transform: none !important;
-        animation: none !important;
+        height: 75vh;
     }
 
-    .navbar {
-        width: 100vw !important;
-        max-width: 100vw !important;
-        overflow: hidden !important;
+    .carousel-caption {
+        bottom: 22%;
+        padding: 0 15px;
     }
 
-    .container {
-        max-width: 100% !important;
-        overflow-x: hidden !important;
+    .carousel-caption h1 {
+        font-size: 32px;
     }
+
+    .carousel-caption p {
+        font-size: 14px;
+    }
+
+    .main-btn {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+
+    .section-space {
+        padding: 55px 0;
+    }
+
+    .section-title {
+        font-size: 30px;
+    }
+
+    .about-heading {
+        font-size: 26px;
+        margin-top: 25px;
+    }
+
+    .about-text {
+        font-size: 14px;
+        text-align: center;
+    }
+
+    .stats-row h3 {
+        font-size: 24px;
+    }
+
+    .stats-row p {
+        font-size: 12px;
+    }
+
+    #programs .row,
+    #trainers .row,
+    #pricing .row,
+    #gallery .row {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        gap: 10px;
+        padding-bottom: 10px;
+    }
+
+    #programs .row > div,
+    #trainers .row > div,
+    #pricing .row > div,
+    #gallery .row > div {
+        flex: 0 0 78% !important;
+        max-width: 78% !important;
+    }
+
+    .program-card {
+        padding: 25px 15px;
+        min-height: 210px;
+    }
+
+    .program-card i {
+        font-size: 34px;
+    }
+
+    .program-card h3 {
+        font-size: 18px;
+    }
+
+    .program-card p {
+        font-size: 13px;
+    }
+
+    .trainer-img {
+        height: 320px;
+    }
+
+    .trainer-overlay {
+        bottom: 0;
+        padding: 15px;
+    }
+
+    .trainer-overlay h3 {
+        font-size: 18px;
+    }
+
+    .trainer-overlay p {
+        font-size: 13px;
+    }
+
+    .pricing-card {
+        padding: 35px 20px;
+    }
+
+    .pricing-card h1 {
+        font-size: 36px;
+    }
+
+    .premium-card {
+        transform: none;
+    }
+
+    .gallery-img {
+        height: 260px;
+    }
+
+    .testimonial-card {
+        padding: 30px 18px;
+    }
+
+    .testimonial-card p {
+        font-size: 15px;
+    }
+
+    .bmi-box,
+    .contact-box,
+    .membership-box,
+    .dashboard-card,
+    .dashboard-table,
+    .receipt-box,
+    .login-box {
+        padding: 25px 18px;
+        width: 100%;
+    }
+
+    .login-box {
+        max-width: 90%;
+    }
+
+    .form-control {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .dashboard-section {
+        padding: 50px 0;
+    }
+
+    .dashboard-card {
+        margin-bottom: 15px;
+    }
+
+    .dashboard-card h3 {
+        font-size: 26px;
+    }
+
+    .dashboard-table {
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 900px;
+        font-size: 13px;
+    }
+
+    .receipt-box h2 {
+        font-size: 28px;
+    }
+
+    .receipt-row {
+        font-size: 14px;
+        gap: 12px;
+    }
+
+    .footer-logo {
+        font-size: 28px;
+    }
+
+    .social-icons a {
+        font-size: 18px;
+    }
+
+    .whatsapp-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+        bottom: 18px;
+        right: 18px;
+    }
+
+    iframe {
+        height: 280px;
+    }
+}
+@media (max-width: 768px) {
+
+    .carousel-caption {
+        bottom: 18%;
+        display: block !important;
+    }
+
+    .carousel-caption h1 {
+        font-size: 28px;
+    }
+
+    .carousel-caption p {
+        font-size: 13px;
+    }
+
+    .carousel-caption .main-btn {
+        display: inline-block !important;
+        margin-top: 10px;
+        padding: 10px 18px;
+        font-size: 13px;
+        z-index: 999;
+        position: relative;
+    }
+
+    .carousel-img {
+        height: 85vh;
+    }
+
+    .custom-navbar {
+        z-index: 9999;
+    }
+
+    .navbar-collapse {
+        background: rgba(0, 0, 0, 0.95);
+        padding: 15px;
+        border-radius: 15px;
+        margin-top: 10px;
+    }
+}
+/* MOBILE NAVBAR BUTTON FIX */
+.navbar-toggler {
+    border: 2px solid red !important;
+    background: red !important;
+    padding: 6px 10px;
+    z-index: 99999;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none !important;
+}
+
+.navbar-toggler-icon {
+    filter: invert(1) !important;
+}
+
+.custom-navbar {
+    z-index: 99999 !important;
+    background: rgba(0,0,0,0.95) !important;
+}/* FORCE MOBILE MENU BUTTON VISIBLE */
+@media (max-width: 991px) {
+    .custom-navbar {
+        background: rgba(0,0,0,0.95) !important;
+        z-index: 999999 !important;
+    }
+
+    .navbar-toggler {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        border: 2px solid red !important;
+        background: red !important;
+        position: absolute !important;
+        right: 15px !important;
+        top: 18px !important;
+        z-index: 1000000 !important;
+    }
+
+    .navbar-toggler-icon {
+        filter: invert(1) !important;
+    }
+
+    .navbar-brand {
+        padding-right: 70px;
+    }
+}
+@media(max-width:768px){
+
+.trainer-overlay{
+    bottom:0;
+}
+
+.trainer-img{
+    transform:none !important;
+}
+
+.trainer-card:hover .trainer-img{
+    transform:none !important;
+}
+
+}
+.trainer-overlay{
+    background: linear-gradient(
+        to top,
+        rgba(62, 99, 144, 0.75),
+        rgba(255,0,0,0.35)
+    );
+}
+
+.trainer-overlay h3{
+    font-weight:700;
+}
+
+.trainer-overlay p{
+    color:white;
 }
