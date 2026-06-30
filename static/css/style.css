@@ -853,3 +853,23 @@ margin:10px auto;
         margin-top: 10px;
     }
 }
+/* MOBILE NAVBAR BUTTON FIX */
+.navbar-toggler {
+    border: 2px solid red !important;
+    background: red !important;
+    padding: 6px 10px;
+    z-index: 99999;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none !important;
+}
+
+.navbar-toggler-icon {
+    filter: invert(1) !important;
+}
+
+.custom-navbar {
+    z-index: 99999 !important;
+    background: rgba(0,0,0,0.95) !important;
+}
