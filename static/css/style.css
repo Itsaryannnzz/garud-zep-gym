@@ -592,3 +592,46 @@ margin:10px auto;
     border:none;
     border-radius:30px;
 }
+@media (max-width: 768px) {
+
+    #programs .col-lg-4,
+    #trainers .col-lg-4 {
+        width: 33.33%;
+        flex: 0 0 33.33%;
+    }
+
+    .program-card {
+        padding: 14px 6px;
+        min-height: 170px;
+    }
+
+    .program-card i {
+        font-size: 26px;
+    }
+
+    .program-card h3 {
+        font-size: 13px;
+    }
+
+    .program-card p {
+        font-size: 10px;
+        line-height: 1.4;
+    }
+
+    .trainer-img {
+        height: 170px;
+    }
+
+    .trainer-overlay {
+        padding: 8px;
+    }
+
+    .trainer-overlay h3 {
+        font-size: 13px;
+    }
+
+    .trainer-overlay p {
+        font-size: 10px;
+        margin-bottom: 2px;
+    }
+}
