@@ -899,3 +899,18 @@ margin:10px auto;
         padding-right: 70px;
     }
 }
+@media(max-width:768px){
+
+.trainer-overlay{
+    bottom:0;
+}
+
+.trainer-img{
+    transform:none !important;
+}
+
+.trainer-card:hover .trainer-img{
+    transform:none !important;
+}
+
+}
