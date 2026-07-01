@@ -134,6 +134,10 @@ def owner_dashboard():
         expiry_alerts=expiry_alerts,
         expiring_members=expiring_members
     )
+class Attendance(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    member_id = db.Column(db.Integer, db.ForeignKey("member.id"))
+    date = db.Column(db.Date, default=date.today)
 
     
 @app.route("/delete-member/<int:id>")
@@ -354,6 +358,33 @@ def pay_partial(id):
         amount=amount,
         partial=True
     )
+@app.route("/attendance", methods=["GET", "POST"])
+def attendance():
+    message = ""
+
+    if request.method == "POST":
+        member_id = request.form["member_id"]
+
+        member = Member.query.get(member_id)
+
+        if not member:
+            message = "Member not found"
+        else:
+            today_attendance = Attendance.query.filter_by(
+                member_id=member.id,
+                date=date.today()
+            ).first()
+
+            if today_attendance:
+                message = f"{member.name} already marked present today"
+            else:
+                attendance = Attendance(member_id=member.id)
+                db.session.add(attendance)
+                db.session.commit()
+
+                message = f"{member.name} attendance marked successfully"
+
+    return render_template("attendance.html", message=message)
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
