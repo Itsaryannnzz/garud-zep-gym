@@ -5,11 +5,11 @@ from flask import send_file
 from reportlab.pdfgen import canvas
 import io
 import razorpay
-
+import os
 
 app = Flask(__name__)
 
-import os
+
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
     "DATABASE_URL",
