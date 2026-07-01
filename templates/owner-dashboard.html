@@ -81,7 +81,7 @@ placeholder="Search by Name, Phone or Plan">
             <table class="table table-dark table-hover table-bordered">
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>Gym No</th>
                         <th>Name</th>
                         <th>Phone</th>
                         <th>Age</th>
@@ -109,7 +109,7 @@ pending-row
 {% endif %}
 ">
 
-    <td>{{ loop.index }}</td>
+    <td>{{ member.gym_number }}</td>
     <td>{{ member.name }}</td>
     <td>{{ member.phone }}</td>
     <td>{{ member.age }}</td>

@@ -72,17 +72,19 @@ def register_member():
     plan_amount = get_plan_amount(plan)
     gym_number = get_next_gym_number()
     member = Member(
+
+    gym_number=gym_number,
+
     name=request.form["name"],
     phone=request.form["phone"],
     age=int(request.form["age"]),
     plan=plan,
     goal=request.form["goal"],
     expiry_date=expiry,
-
     paid_amount=0,
     remaining_amount=plan_amount
-)
 
+)
     db.session.add(member)
     db.session.commit()
 
@@ -340,12 +342,39 @@ def partial_payment(id):
 
 @app.route("/update-db")
 def update_db():
+
     with db.engine.connect() as connection:
-        connection.execute(db.text("ALTER TABLE member ADD COLUMN IF NOT EXISTS paid_amount INTEGER DEFAULT 0"))
-        connection.execute(db.text("ALTER TABLE member ADD COLUMN IF NOT EXISTS remaining_amount INTEGER DEFAULT 0"))
+
+        try:
+            connection.execute(
+                db.text(
+                    "ALTER TABLE member ADD COLUMN gym_number INTEGER"
+                )
+            )
+        except:
+            pass
+
+        try:
+            connection.execute(
+                db.text(
+                    "ALTER TABLE member ADD COLUMN paid_amount INTEGER DEFAULT 0"
+                )
+            )
+        except:
+            pass
+
+        try:
+            connection.execute(
+                db.text(
+                    "ALTER TABLE member ADD COLUMN remaining_amount INTEGER DEFAULT 0"
+                )
+            )
+        except:
+            pass
+
         connection.commit()
 
-    return "Database updated successfully!"
+    return "Database Updated Successfully!"
 @app.route("/init-db")
 def init_db():
     db.create_all()
@@ -371,31 +400,47 @@ def pay_partial(id):
     )
 @app.route("/attendance", methods=["GET", "POST"])
 def attendance():
+
     message = ""
 
     if request.method == "POST":
-        member_id = request.form["member_id"]
 
-        member = Member.query.get(member_id)
+        gym_number = int(request.form["gym_number"])
+
+        member = Member.query.filter_by(
+            gym_number=gym_number
+        ).first()
 
         if not member:
+
             message = "Member not found"
+
         else:
+
             today_attendance = Attendance.query.filter_by(
                 member_id=member.id,
                 date=date.today()
             ).first()
 
             if today_attendance:
+
                 message = f"{member.name} already marked present today"
+
             else:
-                attendance = Attendance(member_id=member.id)
+
+                attendance = Attendance(
+                    member_id=member.id
+                )
+
                 db.session.add(attendance)
                 db.session.commit()
 
                 message = f"{member.name} attendance marked successfully"
 
-    return render_template("attendance.html", message=message)
+    return render_template(
+        "attendance.html",
+        message=message
+    )
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
