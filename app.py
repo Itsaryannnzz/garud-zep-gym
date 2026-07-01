@@ -147,7 +147,11 @@ def delete_member(id):
 def mark_paid(id):
     member = Member.query.get_or_404(id)
 
+    plan_amount = get_plan_amount(member.plan)
+
     member.payment_status = "Paid"
+    member.paid_amount = plan_amount
+    member.remaining_amount = 0
 
     if "3 Month" in member.plan or "VIP" in member.plan:
         member.expiry_date = date.today() + timedelta(days=90)
