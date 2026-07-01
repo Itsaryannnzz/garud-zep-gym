@@ -35,6 +35,8 @@ class Member(db.Model):
     join_date = db.Column(db.Date, default=date.today)
     expiry_date = db.Column(db.Date)
     payment_status = db.Column(db.String(20), default="Pending")
+    paid_amount = db.Column(db.Integer, default=0)
+    remaining_amount = db.Column(db.Integer, default=0)
 
 @app.route("/")
 def home():
@@ -57,20 +59,33 @@ def register_member():
 
     if existing_member:
         return "Member already exists!"
-
+    plan_amount = get_plan_amount(plan)
     member = Member(
-        name=request.form["name"],
-        phone=request.form["phone"],
-        age=int(request.form["age"]),
-        plan=plan,
-        goal=request.form["goal"],
-        expiry_date=expiry
-    )
+    name=request.form["name"],
+    phone=request.form["phone"],
+    age=int(request.form["age"]),
+    plan=plan,
+    goal=request.form["goal"],
+    expiry_date=expiry,
+
+    paid_amount=0,
+    remaining_amount=plan_amount
+)
 
     db.session.add(member)
     db.session.commit()
 
     return render_template("success.html")
+def get_plan_amount(plan):
+    if "₹600" in plan:
+        return 600
+    elif "₹800" in plan:
+        return 800
+    elif "₹1800" in plan:
+        return 1800
+    elif "₹3999" in plan:
+        return 3999
+    return 0
 
 @app.route("/owner-login", methods=["GET", "POST"])
 def owner_login():
@@ -255,7 +270,62 @@ def payment_success(id):
     db.session.commit()
 
     return redirect(url_for("member_dashboard", id=member.id))
+@app.route("/partial-payment/<int:id>", methods=["POST"])
+def partial_payment(id):
+    member = Member.query.get_or_404(id)
 
+    paid_now = int(request.form["paid_amount"])
+    plan_amount = get_plan_amount(member.plan)
+
+    member.paid_amount += paid_now
+    member.remaining_amount = plan_amount - member.paid_amount
+
+    if member.remaining_amount <= 0:
+        member.remaining_amount = 0
+        member.payment_status = "Paid"
+
+        if "3 Month" in member.plan or "VIP" in member.plan:
+            member.expiry_date = date.today() + timedelta(days=90)
+        else:
+            member.expiry_date = date.today() + timedelta(days=30)
+    else:
+        member.payment_status = "Partial"
+
+    db.session.commit()
+
+    return redirect(url_for("owner_dashboard"))
+@app.route("/partial-payment/<int:id>", methods=["POST"])
+def partial_payment(id):
+    member = Member.query.get_or_404(id)
+
+    paid_now = int(request.form["paid_amount"])
+    plan_amount = get_plan_amount(member.plan)
+
+    member.paid_amount += paid_now
+    member.remaining_amount = plan_amount - member.paid_amount
+
+    if member.remaining_amount <= 0:
+        member.remaining_amount = 0
+        member.payment_status = "Paid"
+
+        if "3 Month" in member.plan or "VIP" in member.plan:
+            member.expiry_date = date.today() + timedelta(days=90)
+        else:
+            member.expiry_date = date.today() + timedelta(days=30)
+    else:
+        member.payment_status = "Partial"
+
+    db.session.commit()
+
+    return redirect(url_for("owner_dashboard"))
+@app.route("/update-db")
+def update_db():
+    with db.engine.connect() as connection:
+        connection.execute(db.text("ALTER TABLE member ADD COLUMN IF NOT EXISTS paid_amount INTEGER DEFAULT 0"))
+        connection.execute(db.text("ALTER TABLE member ADD COLUMN IF NOT EXISTS remaining_amount INTEGER DEFAULT 0"))
+        connection.commit()
+
+    return "Database updated successfully!"
 
 if __name__ == "__main__":
     with app.app_context():

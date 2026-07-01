@@ -969,3 +969,8 @@ margin:10px auto;
         overflow-x: hidden !important;
     }
 }
+
+.partial-row td{
+    background:#87ceeb !important;
+    color:#000 !important;
+}
