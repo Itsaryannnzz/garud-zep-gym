@@ -158,8 +158,9 @@ def delete_member(id):
 
     member = Member.query.get_or_404(id)
 
-    db.session.delete(member)
+    Attendance.query.filter_by(member_id=member.id).delete()
 
+    db.session.delete(member)
     db.session.commit()
 
     return redirect(url_for("owner_dashboard"))
