@@ -221,9 +221,25 @@ row.innerText.toLowerCase().includes(value)
 
 </script>
 {% if expiring_members %}
-<audio autoplay>
-    <source src="{{ url_for('static', filename='sounds/alert.mp3') }}" type="audio/mpeg">
+
+<audio id="alertSound">
+    <source src="{{ url_for('static',
+    filename='sounds/alert.mp3') }}"
+    type="audio/mpeg">
 </audio>
+
+<script>
+
+window.onload = function(){
+
+document.getElementById(
+"alertSound"
+).play();
+
+};
+
+</script>
+
 {% endif %}
 </body>
 
