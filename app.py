@@ -255,6 +255,10 @@ def payment_success(id):
     db.session.commit()
 
     return redirect(url_for("member_dashboard", id=member.id))
+@app.route("/init-db")
+def init_db():
+    db.create_all()
+    return "Database tables created successfully!"
 
 if __name__ == "__main__":
     with app.app_context():
