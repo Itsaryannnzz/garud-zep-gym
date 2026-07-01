@@ -1,0 +1,38 @@
+[33m8a53d8d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Added permanent gym number system
+[33m9ae5ee7[m Added attendance system
+[33ma9f4caf[m Added alert and thankyou sounds
+[33m647d219[m Added expiry alert sound and payment success sound
+[33m874ce02[m added notification sounds
+[33mf75d620[m Removed receipt buttons from owner dashboard
+[33m35ad68f[m Added partial payment, search, colors and dashboard improvements
+[33m101be0d[m use live razorpay keys
+[33ma7dba5e[m added member search
+[33me1de6da[m fix mark paid remaining amount
+[33mfdd4473[m Added partial payment system
+[33m0457ea2[m fix routes
+[33ma7c2bc2[m add partial payment columns
+[33m3aa1412[m remove init db route
+[33mfb58abe[m add init db route
+[33m74820ec[m connected neon database
+[33m7370198[m use postgres database
+[33ma904dfc[m fix pwa icon type
+[33mabb0e53[m fixed pwa icon sizes
+[33m176e27a[m added icon 512
+[33m3d0c9a9[m fix pwa icons
+[33mba4a31f[m fix pwa icons
+[33m0305e15[m fix mobile horizontal overflow
+[33mf3e5c9b[m clean mobile css
+[33ma447973[m clean mobile css
+[33m4c1ebb9[m add pwa manifest
+[33m11cce8b[m fix mobile horizontal overflow
+[33m2ef9b2b[m trainer overlay gradient
+[33me5a5881[m trainer overlay gradient
+[33m01acb57[m improved trainer overlay
+[33mb9e839c[m remove trainer hover on mobile
+[33m50b64d8[m fix mobile menu visible
+[33m507a344[m fix mobile navbar button
+[33m3215409[m fix mobile hero button visibility
+[33mbcbcb37[m fix mobile view
+[33md30de54[m fix mobile view
+[33m2823632[m fix mobile view
+[33me90a035[m first deploy
