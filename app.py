@@ -256,20 +256,41 @@ def pay(id):
         amount=amount
 
     )
-@app.route("/payment-success/<int:id>")
-def payment_success(id):
+@app.route("/payment-success/<int:id>/<int:amount>")
+def payment_success(id, amount):
+
     member = Member.query.get_or_404(id)
 
-    member.payment_status = "Paid"
+    plan_amount = get_plan_amount(member.plan)
 
-    if "3 Month" in member.plan or "VIP" in member.plan:
-        member.expiry_date = date.today() + timedelta(days=90)
+    member.paid_amount += amount
+
+    member.remaining_amount = plan_amount - member.paid_amount
+
+    if member.remaining_amount <= 0:
+
+        member.remaining_amount = 0
+
+        member.payment_status = "Paid"
+
+        if "3 Month" in member.plan or "VIP" in member.plan:
+            member.expiry_date = date.today() + timedelta(days=90)
+
+        else:
+            member.expiry_date = date.today() + timedelta(days=30)
+
     else:
-        member.expiry_date = date.today() + timedelta(days=30)
+
+        member.payment_status = "Partial"
 
     db.session.commit()
 
-    return redirect(url_for("member_dashboard", id=member.id))
+    return redirect(
+        url_for(
+            "member_dashboard",
+            id=member.id
+        )
+    )
 @app.route("/partial-payment/<int:id>", methods=["POST"])
 def partial_payment(id):
     member = Member.query.get_or_404(id)
@@ -307,7 +328,25 @@ def update_db():
 def init_db():
     db.create_all()
     return "Database tables created successfully!"
+@app.route("/pay-partial/<int:id>", methods=["POST"])
+def pay_partial(id):
+    member = Member.query.get_or_404(id)
 
+    amount = int(request.form["amount"])
+
+    order = client.order.create({
+        "amount": amount * 100,
+        "currency": "INR",
+        "payment_capture": 1
+    })
+
+    return render_template(
+        "payment.html",
+        member=member,
+        order=order,
+        amount=amount,
+        partial=True
+    )
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()

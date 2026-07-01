@@ -39,22 +39,14 @@ Welcome {{ member.name }}
 
 <strong>Status :</strong>
 
-{% if member.payment_status=="Paid" %}
+{% if member.payment_status == "Paid" %}
+<span class="badge bg-success">Paid</span>
 
-<span class="badge bg-success">
-
-Paid
-
-</span>
+{% elif member.payment_status == "Partial" %}
+<span class="badge bg-info text-dark">Partial</span>
 
 {% else %}
-
-<span class="badge bg-warning text-dark">
-
-Pending
-
-</span>
-
+<span class="badge bg-warning text-dark">Pending</span>
 {% endif %}
 
 </p>
@@ -64,13 +56,37 @@ Pending
 <strong>Expiry :</strong>
 
 {{ member.expiry_date }}
-
 </p>
-{% if member.payment_status == "Pending" %}
-<a href="{{ url_for('pay', id=member.id) }}" class="btn btn-success">
-    Pay Now
-</a>
+<p>
+<strong>Paid :</strong>
+₹{{ member.paid_amount }}
+</p>
 
+<p>
+<strong>Remaining :</strong>
+₹{{ member.remaining_amount }}
+</p>
+
+
+{% if member.payment_status != "Paid" %}
+
+<form action="{{ url_for('pay_partial', id=member.id) }}"
+      method="POST"
+      class="mt-3">
+
+    <input type="number"
+           name="amount"
+           min="1"
+           max="{{ member.remaining_amount }}"
+           class="form-control mb-3"
+           placeholder="Enter Amount"
+           required>
+
+    <button class="btn btn-success w-100">
+        Pay ₹{{ member.remaining_amount }}
+    </button>
+
+</form>
 
 {% else %}
 
@@ -80,7 +96,6 @@ Pending
 </a>
 
 {% endif %}
-
 <a href="{{ url_for('home') }}"
 
 class="btn btn-danger">

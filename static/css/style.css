@@ -974,3 +974,10 @@ margin:10px auto;
     background:#87ceeb !important;
     color:#000 !important;
 }
+.pending-row td{
+
+background:#ff6b6b !important;
+
+color:white !important;
+
+}

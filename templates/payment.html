@@ -29,7 +29,7 @@ var options = {
     },
 
     "handler": function (response) {
-        window.location.href = "/payment-success/{{ member.id }}";
+        window.location.href = "/payment-success/{{ member.id }}/{{ amount }}";
     }
 };
 
