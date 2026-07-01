@@ -1003,3 +1003,18 @@ color:white !important;
     opacity: 0.25;
     font-size: 12px;
 }
+.table-responsive{
+    overflow-x:auto;
+}
+.table-responsive{
+    overflow-x:auto;
+    width:100%;
+}
+
+.dashboard-table{
+    overflow:hidden;
+}
+
+.dashboard-table table{
+    min-width:1000px;
+}
