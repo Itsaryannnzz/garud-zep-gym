@@ -999,3 +999,7 @@ color:white !important;
 .login-box{
     overflow-x:auto;
 }
+.owner-secret-btn{
+    opacity: 0.25;
+    font-size: 12px;
+}

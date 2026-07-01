@@ -75,9 +75,14 @@
 </table>
 
 {% endif %}
-        <a href="{{ url_for('owner_dashboard') }}" class="btn btn-danger mt-3">
-            Back Home
-        </a>
+        <a href="{{ url_for('attendance') }}" class="btn btn-secondary mt-3">
+    Clear
+</a>
+
+<a href="{{ url_for('owner_login') }}"
+   class="btn btn-dark mt-3 owner-secret-btn">
+   Owner
+</a>
     </div>
 </section>
 
