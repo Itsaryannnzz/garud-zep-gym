@@ -985,3 +985,14 @@ color:white !important;
     width: 110px !important;
     min-width: 110px !important;
 }
+.payment-input{
+    width: 130px !important;
+    min-width: 130px !important;
+    color: #000 !important;
+    background: #fff !important;
+    border: 1px solid #ccc !important;
+}
+
+.payment-input::placeholder{
+    color: #555 !important;
+}
