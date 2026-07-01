@@ -106,9 +106,11 @@ def owner_dashboard():
     total_members = Member.query.count()
     pending_fees = sum(member.remaining_amount for member in members)
 
-    expiry_alerts = Member.query.filter(
-        Member.expiry_date <= date.today() + timedelta(days=1)
-    ).count()
+    expiring_members = Member.query.filter(
+    Member.expiry_date <= date.today() + timedelta(days=3)
+).all()
+
+    expiry_alerts = len(expiring_members)
 
     total_fees = 0
 
@@ -129,7 +131,8 @@ def owner_dashboard():
         total_members=total_members,
         pending_fees=pending_fees,
         total_fees=total_fees,
-        expiry_alerts=expiry_alerts
+        expiry_alerts=expiry_alerts,
+        expiring_members=expiring_members
     )
 
     

@@ -48,7 +48,25 @@
             </div>
 
         </div>
+        {% if expiring_members %}
 
+<div class="alert alert-warning mt-4">
+
+<h4>⚠️ Membership Expiry Alerts</h4>
+
+{% for member in expiring_members %}
+
+<p>
+<strong>{{ member.name }}</strong>
+membership expires on
+<strong>{{ member.expiry_date }}</strong>
+</p>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
         <div class="dashboard-table mt-5">
             <h3 class="mb-4">Registered Members</h3>
             <input
@@ -202,7 +220,11 @@ row.innerText.toLowerCase().includes(value)
 });
 
 </script>
-
+{% if expiring_members %}
+<audio autoplay>
+    <source src="{{ url_for('static', filename='sounds/alert.mp3') }}" type="audio/mpeg">
+</audio>
+{% endif %}
 </body>
 
 </html>

@@ -109,7 +109,11 @@ Back Home
 </div>
 
 </section>
-
+{% if member.payment_status == "Paid" %}
+<audio autoplay>
+    <source src="{{ url_for('static', filename='sounds/thankyou.mp3') }}" type="audio/mpeg">
+</audio>
+{% endif %}
 </body>
 
 </html>
