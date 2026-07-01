@@ -151,6 +151,7 @@ class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     member_id = db.Column(db.Integer, db.ForeignKey("member.id"))
     date = db.Column(db.Date, default=date.today)
+    member = db.relationship("Member")
 
     
 @app.route("/delete-member/<int:id>")
@@ -413,34 +414,34 @@ def attendance():
         ).first()
 
         if not member:
-
             message = "Member not found"
-
         else:
-
             today_attendance = Attendance.query.filter_by(
                 member_id=member.id,
                 date=date.today()
             ).first()
 
             if today_attendance:
-
                 message = f"{member.name} already marked present today"
-
             else:
-
-                attendance = Attendance(
-                    member_id=member.id
-                )
-
+                attendance = Attendance(member_id=member.id)
                 db.session.add(attendance)
                 db.session.commit()
-
                 message = f"{member.name} attendance marked successfully"
+
+    today_records = Attendance.query.filter_by(
+        date=date.today()
+    ).all()
+
+    history_records = Attendance.query.order_by(
+        Attendance.date.desc()
+    ).limit(100).all()
 
     return render_template(
         "attendance.html",
-        message=message
+        message=message,
+        today_records=today_records,
+        history_records=history_records
     )
 if __name__ == "__main__":
     with app.app_context():

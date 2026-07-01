@@ -996,3 +996,6 @@ color:white !important;
 .payment-input::placeholder{
     color: #555 !important;
 }
+.login-box{
+    overflow-x:auto;
+}
