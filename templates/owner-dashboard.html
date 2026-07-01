@@ -228,17 +228,10 @@ row.innerText.toLowerCase().includes(value)
     type="audio/mpeg">
 </audio>
 
-<script>
-
-window.onload = function(){
-
-document.getElementById(
-"alertSound"
-).play();
-
-};
-
-</script>
+<button class="btn btn-warning mt-3"
+onclick="document.getElementById('alertSound').play()">
+    🔔 Play Expiry Alert
+</button>
 
 {% endif %}
 </body>

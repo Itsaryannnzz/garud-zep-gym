@@ -112,27 +112,25 @@ Back Home
 {% if member.payment_status == "Paid" %}
 
 <audio id="thankyouSound">
-
-<source
-src="{{ url_for('static',
-filename='sounds/thankyou.mp3') }}"
-type="audio/mpeg">
-
+    <source src="{{ url_for('static',
+    filename='sounds/thankyou.mp3') }}"
+    type="audio/mpeg">
 </audio>
 
 <script>
 
-window.onload=function(){
+window.onload = function(){
 
-document.getElementById(
-"thankyouSound"
-).play();
+    document.getElementById(
+        "thankyouSound"
+    ).play();
 
 };
 
 </script>
 
 {% endif %}
+
 </body>
 
 </html>
