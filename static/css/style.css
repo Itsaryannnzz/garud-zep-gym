@@ -981,3 +981,7 @@ background:#ff6b6b !important;
 color:white !important;
 
 }
+.payment-input{
+    width: 110px !important;
+    min-width: 110px !important;
+}

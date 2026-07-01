@@ -104,7 +104,7 @@ def owner_login():
 def owner_dashboard():
     members = Member.query.all()
     total_members = Member.query.count()
-    pending_fees = Member.query.filter_by(payment_status="Pending").count()
+    pending_fees = sum(member.remaining_amount for member in members)
 
     expiry_alerts = Member.query.filter(
         Member.expiry_date <= date.today() + timedelta(days=1)

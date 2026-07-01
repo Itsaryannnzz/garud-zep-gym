@@ -51,6 +51,11 @@
 
         <div class="dashboard-table mt-5">
             <h3 class="mb-4">Registered Members</h3>
+            <input
+type="text"
+id="searchMember"
+class="form-control mb-3"
+placeholder="Search by Name, Phone or Plan">
 
             <table class="table table-dark table-hover table-bordered">
                 <thead>
@@ -126,11 +131,12 @@ Pending
       class="d-flex gap-1 mb-2">
 
     <input type="number"
-           name="paid_amount"
-           class="form-control form-control-sm"
-           placeholder="₹"
-           max="{{ member.remaining_amount }}"
-           required>
+       name="paid_amount"
+       class="form-control form-control-sm payment-input"
+       placeholder="Amount"
+       min="1"
+       max="{{ member.remaining_amount }}"
+       required>
 
     <button class="btn btn-info btn-sm">
         Add
@@ -176,5 +182,28 @@ Pending
     </div>
 </section>
 
+
+<script>
+
+document.getElementById("searchMember")
+.addEventListener("keyup", function(){
+
+let value = this.value.toLowerCase();
+
+document.querySelectorAll("tbody tr")
+.forEach(function(row){
+
+row.style.display =
+row.innerText.toLowerCase().includes(value)
+? ""
+: "none";
+
+});
+
+});
+
+</script>
+
 </body>
+
 </html>
