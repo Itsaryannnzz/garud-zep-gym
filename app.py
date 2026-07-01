@@ -27,6 +27,7 @@ client = razorpay.Client(
 
 class Member(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    gym_number = db.Column(db.Integer, unique=True)
     name = db.Column(db.String(100))
     phone = db.Column(db.String(20))
     age = db.Column(db.Integer)
@@ -41,7 +42,16 @@ class Member(db.Model):
 @app.route("/")
 def home():
     return render_template("index.html")
+def get_next_gym_number():
 
+    last_member = Member.query.order_by(
+        Member.gym_number.desc()
+    ).first()
+
+    if last_member and last_member.gym_number:
+        return last_member.gym_number + 1
+
+    return 1
 @app.route("/register-member", methods=["POST"])
 def register_member():
 
@@ -60,6 +70,7 @@ def register_member():
     if existing_member:
         return "Member already exists!"
     plan_amount = get_plan_amount(plan)
+    gym_number = get_next_gym_number()
     member = Member(
     name=request.form["name"],
     phone=request.form["phone"],
