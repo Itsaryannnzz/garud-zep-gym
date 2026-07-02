@@ -38,6 +38,9 @@ class Member(db.Model):
     payment_status = db.Column(db.String(20), default="Pending")
     paid_amount = db.Column(db.Integer, default=0)
     remaining_amount = db.Column(db.Integer, default=0)
+    cash_paid = db.Column(db.Integer, default=0)
+    online_paid = db.Column(db.Integer, default=0)
+    is_active = db.Column(db.Boolean, default=True)
 
 @app.route("/")
 def home():
@@ -369,6 +372,33 @@ def update_db():
             connection.execute(
                 db.text(
                     "ALTER TABLE member ADD COLUMN remaining_amount INTEGER DEFAULT 0"
+                )
+            )
+        except:
+            pass
+
+        try:
+            connection.execute(
+                db.text(
+                    "ALTER TABLE member ADD COLUMN cash_paid INTEGER DEFAULT 0"
+                )
+            )
+        except:
+            pass
+
+        try:
+            connection.execute(
+                db.text(
+                    "ALTER TABLE member ADD COLUMN online_paid INTEGER DEFAULT 0"
+                )
+            )
+        except:
+            pass
+
+        try:
+            connection.execute(
+                db.text(
+                    "ALTER TABLE member ADD COLUMN is_active BOOLEAN DEFAULT TRUE"
                 )
             )
         except:
