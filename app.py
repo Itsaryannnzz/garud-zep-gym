@@ -345,7 +345,24 @@ def partial_payment(id):
     db.session.commit()
 
     return redirect(url_for("owner_dashboard"))
+@app.route("/deactivate-member/<int:id>")
+def deactivate_member(id):
+    member = Member.query.get_or_404(id)
 
+    member.is_active = False
+    db.session.commit()
+
+    return redirect(url_for("owner_dashboard"))
+
+
+@app.route("/activate-member/<int:id>")
+def activate_member(id):
+    member = Member.query.get_or_404(id)
+
+    member.is_active = True
+    db.session.commit()
+
+    return redirect(url_for("owner_dashboard"))
 @app.route("/update-db")
 def update_db():
 

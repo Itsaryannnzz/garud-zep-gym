@@ -186,11 +186,22 @@ Pending
            class="btn btn-success btn-sm">Mark Paid</a>
         {% endif %}
 
-        <a href="{{ url_for('delete_member', id=member.id) }}"
-           class="btn btn-danger btn-sm"
-           onclick="return confirm('Are you sure you want to delete this member?')">
-           Delete
-        </a>
+        {% if member.is_active %}
+
+<a href="{{ url_for('deactivate_member', id=member.id) }}"
+   class="btn btn-warning btn-sm"
+   onclick="return confirm('Deactivate this member?')">
+   Deactivate
+</a>
+
+{% else %}
+
+<a href="{{ url_for('activate_member', id=member.id) }}"
+   class="btn btn-success btn-sm">
+   Activate
+</a>
+
+{% endif %}
     </td>
 
 </tr>
