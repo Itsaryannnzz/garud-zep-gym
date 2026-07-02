@@ -174,9 +174,14 @@ def mark_paid(id):
 
     plan_amount = get_plan_amount(member.plan)
 
-    member.payment_status = "Paid"
-    member.paid_amount = plan_amount
+    remaining = plan_amount - (member.cash_paid + member.online_paid)
+
+    if remaining > 0:
+        member.cash_paid += remaining
+
+    member.paid_amount = member.cash_paid + member.online_paid
     member.remaining_amount = 0
+    member.payment_status = "Paid"
 
     if "3 Month" in member.plan or "VIP" in member.plan:
         member.expiry_date = date.today() + timedelta(days=90)
@@ -186,15 +191,6 @@ def mark_paid(id):
     db.session.commit()
 
     return redirect(url_for("owner_dashboard"))
-@app.route("/receipt/<int:id>")
-def receipt(id):
-
-    member = Member.query.get_or_404(id)
-
-    return render_template(
-        "receipt.html",
-        member=member
-    )
 @app.route("/download-receipt/<int:id>")
 def download_receipt(id):
     member = Member.query.get_or_404(id)
@@ -324,10 +320,15 @@ def payment_success(id, amount):
 def partial_payment(id):
     member = Member.query.get_or_404(id)
 
-    paid_now = int(request.form["paid_amount"])
+    cash_now = int(request.form.get("cash_amount", 0))
+    online_now = int(request.form.get("online_amount", 0))
+
     plan_amount = get_plan_amount(member.plan)
 
-    member.paid_amount += paid_now
+    member.cash_paid += cash_now
+    member.online_paid += online_now
+
+    member.paid_amount = member.cash_paid + member.online_paid
     member.remaining_amount = plan_amount - member.paid_amount
 
     if member.remaining_amount <= 0:

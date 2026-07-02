@@ -89,10 +89,12 @@ placeholder="Search by Name, Phone or Plan">
                         <th>Goal</th>
                         <th>Join Date</th>
                         <th>Expiry Date</th>
-                        <th>Paid</th>
-<th>Remaining</th>
-<th>Status</th>
-<th>Action</th>
+                        <th>Cash</th>
+                        <th>Online</th>
+                        <th>Total Paid</th>
+                        <th>Remaining</th>
+                        <th>Status</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
 
@@ -117,8 +119,10 @@ pending-row
     <td>{{ member.goal }}</td>
     <td>{{ member.join_date }}</td>
     <td>{{ member.expiry_date }}</td>
-    <td>₹{{ member.paid_amount }}</td>
-    <td>₹{{ member.remaining_amount }}</td>
+    <td>₹{{ member.cash_paid }}</td>
+<td>₹{{ member.online_paid }}</td>
+<td>₹{{ member.paid_amount }}</td>
+<td>₹{{ member.remaining_amount }}</td>
 
     <td>
 
@@ -149,17 +153,23 @@ Pending
 
 <form action="{{ url_for('partial_payment', id=member.id) }}"
       method="POST"
-      class="d-flex gap-1 mb-2">
+      class="payment-form mb-2">
 
     <input type="number"
-       name="paid_amount"
-       class="form-control form-control-sm payment-input"
-       placeholder="Amount"
-       min="1"
-       max="{{ member.remaining_amount }}"
-       required>
+       name="cash_amount"
+       class="form-control form-control-sm payment-input mb-1"
+       placeholder="Cash ₹"
+       min="0"
+       value="0">
 
-    <button class="btn btn-info btn-sm">
+    <input type="number"
+       name="online_amount"
+       class="form-control form-control-sm payment-input mb-1"
+       placeholder="Online ₹"
+       min="0"
+       value="0">
+
+    <button class="btn btn-info btn-sm w-100">
         Add
     </button>
 
@@ -188,7 +198,7 @@ Pending
 {% else %}
 
 <tr>
-    <td colspan="12" class="text-center">
+    <td colspan="14" class="text-center">
         No members registered yet.
     </td>
 </tr>
