@@ -24,10 +24,23 @@
         </form>
 
         {% if message %}
-        <h4 class="mt-4 text-warning">
-            {{ message }}
-        </h4>
-        {% endif %}
+
+<h4 class="mt-4 text-warning">
+    {{ message }}
+</h4>
+
+{% if "⚠" in message %}
+
+<audio autoplay>
+    <source
+        src="{{ url_for('static',
+        filename='sounds/alert.mp3') }}"
+        type="audio/mpeg">
+</audio>
+
+{% endif %}
+
+{% endif %}
 {% if today_records %}
 
 <h3 class="mt-4">Today's Present Members</h3>

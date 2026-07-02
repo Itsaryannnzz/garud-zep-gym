@@ -463,6 +463,10 @@ def attendance():
 
         if not member:
             message = "Member not found"
+
+        elif member.is_active == False:
+            message = f"⚠ {member.name} is Deactivated. Attendance not marked."
+
         else:
             today_attendance = Attendance.query.filter_by(
                 member_id=member.id,
@@ -471,11 +475,17 @@ def attendance():
 
             if today_attendance:
                 message = f"{member.name} already marked present today"
+
             else:
                 attendance = Attendance(member_id=member.id)
+
                 db.session.add(attendance)
                 db.session.commit()
-                message = f"{member.name} attendance marked successfully"
+
+                if member.expiry_date < date.today():
+                    message = f"⚠ {member.name} attendance marked successfully but membership expired on {member.expiry_date}"
+                else:
+                    message = f"{member.name} attendance marked successfully"
 
     today_records = Attendance.query.filter_by(
         date=date.today()
