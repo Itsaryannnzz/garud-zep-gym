@@ -2,7 +2,7 @@ from enum import member
 
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from flask import send_file
 from reportlab.pdfgen import canvas
 import io
@@ -131,8 +131,7 @@ def owner_dashboard():
     )
 
     expiring_members = Member.query.filter(
-        Member.expiry_date <= date.today()
-        + timedelta(days=3)
+        Member.expiry_date <= date.today() + timedelta(days=3)
     ).all()
 
     expiry_alerts = len(expiring_members)
@@ -141,68 +140,56 @@ def owner_dashboard():
         date=date.today()
     ).count()
 
-    weekly_attendance = Attendance.query.filter(
-        Attendance.date >= date.today()
-        - timedelta(days=7)
-    ).count()
+    weekly_collection = sum(
+        member.paid_amount
+        for member in members
+        if member.join_date >= date.today() - timedelta(days=7)
+    )
 
-    monthly_attendance = Attendance.query.filter(
-        Attendance.date >= date.today()
-        - timedelta(days=30)
-    ).count()
+    monthly_collection = sum(
+        member.paid_amount
+        for member in members
+        if member.join_date >= date.today() - timedelta(days=30)
+    )
 
-    yearly_attendance = Attendance.query.filter(
-        Attendance.date >= date.today()
-        - timedelta(days=365)
-    ).count()
+    yearly_collection = sum(
+        member.paid_amount
+        for member in members
+        if member.join_date >= date.today() - timedelta(days=365)
+    )
 
-    total_fees = 0
-
-    for member in members:
-
-        if member.payment_status == "Paid":
-
-            if "₹600" in member.plan:
-                total_fees += 600
-
-            elif "₹800" in member.plan:
-                total_fees += 800
-
-            elif "₹1800" in member.plan:
-                total_fees += 1800
-
-            elif "₹3999" in member.plan:
-                total_fees += 3999
+    total_fees = sum(
+        member.paid_amount
+        for member in members
+    )
 
     return render_template(
-
         "owner-dashboard.html",
-
         members=members,
-
         total_members=total_members,
-
         pending_fees=pending_fees,
-
         total_fees=total_fees,
-
         expiry_alerts=expiry_alerts,
-
         expiring_members=expiring_members,
-
         today_attendance_count=today_attendance_count,
-
-        weekly_attendance=weekly_attendance,
-
-        monthly_attendance=monthly_attendance,
-
-        yearly_attendance=yearly_attendance
-
+        weekly_collection=weekly_collection,
+        monthly_collection=monthly_collection,
+        yearly_collection=yearly_collection,
+        current_date=date.today()
     )
 class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     member_id = db.Column(db.Integer, db.ForeignKey("member.id"))
     date = db.Column(db.Date, default=date.today)
+    time = db.Column(
+
+    db.Time,
+
+    default=lambda:
+
+    datetime.now().time()
+
+)
     member = db.relationship("Member")
 
     

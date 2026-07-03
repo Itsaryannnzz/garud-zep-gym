@@ -29,22 +29,22 @@
 </div>
 <div class="col-md-3">
     <div class="dashboard-card">
-        <h3>{{ weekly_attendance }}</h3>
-        <p>Weekly Attendance</p>
+        <h3>₹{{ weekly_collection }}</h3>
+<p>Weekly Collection</p>
     </div>
 </div>
 
 <div class="col-md-3">
     <div class="dashboard-card">
-        <h3>{{ monthly_attendance }}</h3>
-        <p>Monthly Attendance</p>
+        <h3>₹{{ monthly_collection }}</h3>
+        <p>Monthly Collection</p>
     </div>
 </div>
 
 <div class="col-md-3">
     <div class="dashboard-card">
-        <h3>{{ yearly_attendance }}</h3>
-        <p>Yearly Attendance</p>
+        <h3>₹{{ yearly_collection }}</h3>
+        <p>Yearly Collection</p>
     </div>
 </div>
             <div class="col-md-3">
@@ -173,7 +173,7 @@ Pending
 
 </td>
 
-    <td>
+    <td class="action-cell">
         {% if member.payment_status != "Paid" %}
 
 <form action="{{ url_for('partial_payment', id=member.id) }}"
@@ -184,15 +184,15 @@ Pending
        name="cash_amount"
        class="form-control form-control-sm payment-input mb-1"
        placeholder="Cash ₹"
-       min="0"
-       value="0">
+       min="0">
+       
 
     <input type="number"
        name="online_amount"
        class="form-control form-control-sm payment-input mb-1"
        placeholder="Online ₹"
        min="0"
-       value="0">
+       >
 
     <button class="btn btn-info btn-sm w-100">
         Add
@@ -206,16 +206,19 @@ Pending
         <a href="{{ url_for('download_receipt', id=member.id) }}"
            class="btn btn-primary btn-sm">PDF</a>
 
-        <a href="{{ url_for('renew_member', id=member.id) }}"
+        {% if member.expiry_date < current_date
+      and member.payment_status != "Paid" %}
+<a href="{{ url_for('renew_member', id=member.id) }}"
    class="btn btn-warning btn-sm"
    onclick="return confirm('Renew this member?')">
    Renew
 </a>
+{% endif %}
 
         {% if member.is_active %}
 
 <a href="{{ url_for('deactivate_member', id=member.id) }}"
-   class="btn btn-warning btn-sm"
+   class="btn btn-outline-warning btn-sm"
    onclick="return confirm('Deactivate this member?')">
    Deactivate
 </a>

@@ -60,6 +60,7 @@ Today's Attendance :
 <th>Name</th>
 
 <th>Date</th>
+<th>Time</th>
 <th>Expiry</th>
 <th>Due</th>
     </tr>
@@ -69,7 +70,13 @@ Today's Attendance :
         <td>{{ record.member.gym_number }}</td>
         <td>{{ record.member.name }}</td>
         
-        <td>{{ record.date }}</td><td>{{ record.member.expiry_date }}</td>
+        <td>{{ record.date }}</td>
+
+<td>
+
+{{ record.time.strftime('%H:%M') }}
+
+</td><td>{{ record.member.expiry_date }}</td>
 
         <td>{{ record.member.remaining_amount }}</td>
 

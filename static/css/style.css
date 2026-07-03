@@ -1094,3 +1094,61 @@ color:white !important;
     text-align:center;
     white-space:nowrap;
 }
+.action-cell{
+    min-width: 150px;
+}
+
+.action-cell .btn{
+    width: 100%;
+    margin-bottom: 5px;
+    font-size: 12px;
+    padding: 5px;
+}
+
+.payment-input{
+    font-size: 12px;
+    padding: 5px;
+}
+.dashboard-table table{
+    table-layout: fixed;
+    width:100%;
+}
+
+.dashboard-table th,
+.dashboard-table td{
+    padding:8px;
+    font-size:13px;
+    white-space:nowrap;
+    text-align:center;
+}
+
+.dashboard-table th:nth-child(1),
+.dashboard-table td:nth-child(1){
+    width:70px;
+}
+
+.dashboard-table th:nth-child(2),
+.dashboard-table td:nth-child(2){
+    width:120px;
+}
+
+.dashboard-table th:nth-child(5),
+.dashboard-table td:nth-child(5){
+    width:150px;
+}
+
+.dashboard-table th:nth-child(14),
+.dashboard-table td:nth-child(14){
+    width:170px;
+}
+.action-cell{
+    min-width:170px;
+}
+
+.action-cell .btn{
+    margin-top:4px;
+}
+
+.payment-input{
+    font-size:12px;
+}
