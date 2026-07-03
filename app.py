@@ -138,7 +138,7 @@ def owner_dashboard():
     expiry_alerts = len(expiring_members)
 
     today_attendance_count = Attendance.query.filter_by(
-    date=date.today()
+     date=date.today()
     ).count()
 
     weekly_collection = sum(
