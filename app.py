@@ -1,3 +1,5 @@
+from enum import member
+
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import date, timedelta
@@ -127,6 +129,9 @@ def owner_dashboard():
 ).all()
 
     expiry_alerts = len(expiring_members)
+    today_attendance_count = Attendance.query.filter_by(
+    date=date.today()
+).count()
 
     total_fees = 0
 
@@ -142,14 +147,15 @@ def owner_dashboard():
                 total_fees += 3999
 
     return render_template(
-        "owner-dashboard.html",
-        members=members,
-        total_members=total_members,
-        pending_fees=pending_fees,
-        total_fees=total_fees,
-        expiry_alerts=expiry_alerts,
-        expiring_members=expiring_members
-    )
+    "owner-dashboard.html",
+    members=members,
+    total_members=total_members,
+    pending_fees=pending_fees,
+    total_fees=total_fees,
+    expiry_alerts=expiry_alerts,
+    expiring_members=expiring_members,
+    today_attendance_count=today_attendance_count
+)
 class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     member_id = db.Column(db.Integer, db.ForeignKey("member.id"))
@@ -425,6 +431,28 @@ def update_db():
         connection.commit()
 
     return "Database Updated Successfully!"
+@app.route("/renew-member/<int:id>")
+def renew_member(id):
+
+    member = Member.query.get_or_404(id)
+
+    plan_amount = get_plan_amount(member.plan)
+
+    member.cash_paid = 0
+    member.online_paid = 0
+    member.paid_amount = 0
+    member.remaining_amount = plan_amount
+    member.payment_status = "Pending"
+    member.is_active = True
+
+    if "3 Month" in member.plan or "VIP" in member.plan:
+        member.expiry_date = date.today() + timedelta(days=90)
+    else:
+        member.expiry_date = date.today() + timedelta(days=30)
+
+    db.session.commit()
+
+    return redirect(url_for("owner_dashboard"))
 @app.route("/init-db")
 def init_db():
     db.create_all()
@@ -478,18 +506,23 @@ def attendance():
 
             else:
                 attendance = Attendance(member_id=member.id)
-
                 db.session.add(attendance)
                 db.session.commit()
 
                 if member.expiry_date < date.today():
                     message = f"⚠ {member.name} attendance marked successfully but membership expired on {member.expiry_date}"
+
+                elif member.remaining_amount > 0:
+                    message = f"⚠ {member.name} attendance marked successfully but fees remaining ₹{member.remaining_amount}"
+
                 else:
                     message = f"{member.name} attendance marked successfully"
 
     today_records = Attendance.query.filter_by(
         date=date.today()
     ).all()
+
+    today_count = len(today_records)
 
     history_records = Attendance.query.order_by(
         Attendance.date.desc()
@@ -499,7 +532,8 @@ def attendance():
         "attendance.html",
         message=message,
         today_records=today_records,
-        history_records=history_records
+        history_records=history_records,
+        today_count=today_count
     )
 if __name__ == "__main__":
     with app.app_context():
