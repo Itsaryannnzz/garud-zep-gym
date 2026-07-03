@@ -182,9 +182,7 @@ class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     member_id = db.Column(db.Integer, db.ForeignKey("member.id"))
     date = db.Column(db.Date, default=date.today)
-    time = db.Column(
-
-    db.Time,
+    time = db.Column(db.Time,
 
     default=lambda:
 
