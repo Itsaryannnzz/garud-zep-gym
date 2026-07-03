@@ -122,6 +122,8 @@ def owner_login():
 @app.route("/owner-dashboard")
 def owner_dashboard():
 
+    return "Dashboard Working"
+
     members = Member.query.all()
 
     total_members = Member.query.count()
