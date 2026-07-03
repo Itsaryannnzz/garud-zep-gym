@@ -138,7 +138,7 @@ def owner_dashboard():
     expiry_alerts = len(expiring_members)
 
     today_attendance_count = Attendance.query.filter_by(
-        date=date.today()
+    date=date.today()
     ).count()
 
     weekly_collection = sum(
@@ -400,7 +400,7 @@ def activate_member(id):
     db.session.commit()
 
     return redirect(url_for("owner_dashboard"))
-@app.route("/update-db")
+@app.route('/update-db')
 def update_db():
 
     with db.engine.connect() as connection:
@@ -408,60 +408,16 @@ def update_db():
         try:
             connection.execute(
                 db.text(
-                    "ALTER TABLE member ADD COLUMN gym_number INTEGER"
+                    "ALTER TABLE attendance ADD COLUMN time TIME"
                 )
             )
+
         except:
             pass
 
-        try:
-            connection.execute(
-                db.text(
-                    "ALTER TABLE member ADD COLUMN paid_amount INTEGER DEFAULT 0"
-                )
-            )
-        except:
-            pass
+        db.session.commit()
 
-        try:
-            connection.execute(
-                db.text(
-                    "ALTER TABLE member ADD COLUMN remaining_amount INTEGER DEFAULT 0"
-                )
-            )
-        except:
-            pass
-
-        try:
-            connection.execute(
-                db.text(
-                    "ALTER TABLE member ADD COLUMN cash_paid INTEGER DEFAULT 0"
-                )
-            )
-        except:
-            pass
-
-        try:
-            connection.execute(
-                db.text(
-                    "ALTER TABLE member ADD COLUMN online_paid INTEGER DEFAULT 0"
-                )
-            )
-        except:
-            pass
-
-        try:
-            connection.execute(
-                db.text(
-                    "ALTER TABLE member ADD COLUMN is_active BOOLEAN DEFAULT TRUE"
-                )
-            )
-        except:
-            pass
-
-        connection.commit()
-
-    return "Database Updated Successfully!"
+    return "Database Updated Successfully"
 @app.route("/renew-member/<int:id>")
 def renew_member(id):
 
@@ -520,7 +476,9 @@ def edit_member(id):
 
         plan_amount = get_plan_amount(member.plan)
 
-        member.remaining_amount = plan_amount - member.paid_amount
+        member.remaining_amount = max(
+        0,
+        plan_amount - member.paid_amount)
 
         if member.remaining_amount <= 0:
             member.remaining_amount = 0

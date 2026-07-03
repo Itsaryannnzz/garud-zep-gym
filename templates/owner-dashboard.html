@@ -127,7 +127,7 @@ placeholder="Search by Name, Phone or Plan">
 {% for member in members %}
 
 <tr class="
-{% if member.expiry_date < current_date %}
+{% if member.expiry_date and member.expiry_date < current_date %}
 pending-row
 
 {% elif member.payment_status == 'Partial' %}
@@ -154,7 +154,7 @@ pending-row
 
     <td>
 
-{% if member.expiry_date <= current_date %}
+{% if member.expiry_date and member.expiry_date <= current_date %}
 
 <span class="badge bg-danger">
 Expired
@@ -218,7 +218,9 @@ Pending
 
         
 
-        {% if member.expiry_date <= current_date %}
+        
+
+        {% if member.expiry_date and member.expiry_date <= current_date %}
 <a href="{{ url_for('renew_member', id=member.id) }}"
    class="btn btn-warning btn-sm"
    onclick="return confirm('Renew this member?')">
