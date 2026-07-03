@@ -132,6 +132,17 @@ def owner_dashboard():
     today_attendance_count = Attendance.query.filter_by(
     date=date.today()
 ).count()
+weekly_attendance = Attendance.query.filter(
+    Attendance.date >= date.today() - timedelta(days=7)
+).count()
+
+monthly_attendance = Attendance.query.filter(
+    Attendance.date >= date.today() - timedelta(days=30)
+).count()
+
+yearly_attendance = Attendance.query.filter(
+    Attendance.date >= date.today() - timedelta(days=365)
+).count()
 
     total_fees = 0
 
@@ -154,7 +165,10 @@ def owner_dashboard():
     total_fees=total_fees,
     expiry_alerts=expiry_alerts,
     expiring_members=expiring_members,
-    today_attendance_count=today_attendance_count
+    
+    weekly_attendance=weekly_attendance,
+    monthly_attendance=monthly_attendance,
+    yearly_attendance=yearly_attendance
 )
 class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
