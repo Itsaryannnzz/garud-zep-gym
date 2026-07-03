@@ -120,56 +120,85 @@ def owner_login():
 
 @app.route("/owner-dashboard")
 def owner_dashboard():
+
     members = Member.query.all()
+
     total_members = Member.query.count()
-    pending_fees = sum(member.remaining_amount for member in members)
+
+    pending_fees = sum(
+        member.remaining_amount
+        for member in members
+    )
 
     expiring_members = Member.query.filter(
-    Member.expiry_date <= date.today() + timedelta(days=3)
-).all()
+        Member.expiry_date <= date.today()
+        + timedelta(days=3)
+    ).all()
 
     expiry_alerts = len(expiring_members)
+
     today_attendance_count = Attendance.query.filter_by(
-    date=date.today()
-).count()
-weekly_attendance = Attendance.query.filter(
-    Attendance.date >= date.today() - timedelta(days=7)
-).count()
+        date=date.today()
+    ).count()
 
-monthly_attendance = Attendance.query.filter(
-    Attendance.date >= date.today() - timedelta(days=30)
-).count()
+    weekly_attendance = Attendance.query.filter(
+        Attendance.date >= date.today()
+        - timedelta(days=7)
+    ).count()
 
-yearly_attendance = Attendance.query.filter(
-    Attendance.date >= date.today() - timedelta(days=365)
-).count()
+    monthly_attendance = Attendance.query.filter(
+        Attendance.date >= date.today()
+        - timedelta(days=30)
+    ).count()
+
+    yearly_attendance = Attendance.query.filter(
+        Attendance.date >= date.today()
+        - timedelta(days=365)
+    ).count()
 
     total_fees = 0
 
     for member in members:
+
         if member.payment_status == "Paid":
+
             if "₹600" in member.plan:
                 total_fees += 600
+
             elif "₹800" in member.plan:
                 total_fees += 800
+
             elif "₹1800" in member.plan:
                 total_fees += 1800
+
             elif "₹3999" in member.plan:
                 total_fees += 3999
 
     return render_template(
-    "owner-dashboard.html",
-    members=members,
-    total_members=total_members,
-    pending_fees=pending_fees,
-    total_fees=total_fees,
-    expiry_alerts=expiry_alerts,
-    expiring_members=expiring_members,
-    
-    weekly_attendance=weekly_attendance,
-    monthly_attendance=monthly_attendance,
-    yearly_attendance=yearly_attendance
-)
+
+        "owner-dashboard.html",
+
+        members=members,
+
+        total_members=total_members,
+
+        pending_fees=pending_fees,
+
+        total_fees=total_fees,
+
+        expiry_alerts=expiry_alerts,
+
+        expiring_members=expiring_members,
+
+        today_attendance_count=today_attendance_count,
+
+        weekly_attendance=weekly_attendance,
+
+        monthly_attendance=monthly_attendance,
+
+        yearly_attendance=yearly_attendance
+
+    )
 class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     member_id = db.Column(db.Integer, db.ForeignKey("member.id"))
@@ -504,50 +533,156 @@ def attendance():
         ).first()
 
         if not member:
+
             message = "Member not found"
 
-        elif member.is_active == False:
-            message = f"⚠ {member.name} is Deactivated. Attendance not marked."
+        elif not member.is_active:
+
+            message = (
+                f"⚠ {member.name} is Deactivated. "
+                f"Attendance not marked."
+            )
 
         else:
+
             today_attendance = Attendance.query.filter_by(
+
                 member_id=member.id,
+
                 date=date.today()
+
             ).first()
 
             if today_attendance:
-                message = f"{member.name} already marked present today"
+
+                message = (
+                    f"{member.name} already marked present today"
+                )
 
             else:
-                attendance = Attendance(member_id=member.id)
+
+                attendance = Attendance(
+
+                    member_id=member.id
+
+                )
+
                 db.session.add(attendance)
+
                 db.session.commit()
 
                 if member.expiry_date < date.today():
-                    message = f"⚠ {member.name} attendance marked successfully but membership expired on {member.expiry_date}"
+
+                    message = (
+
+                        f"⚠ {member.name} attendance marked "
+
+                        f"successfully but membership expired "
+
+                        f"on {member.expiry_date}"
+
+                    )
 
                 elif member.remaining_amount > 0:
-                    message = f"⚠ {member.name} attendance marked successfully but fees remaining ₹{member.remaining_amount}"
+
+                    message = (
+
+                        f"⚠ {member.name} attendance marked "
+
+                        f"successfully but fees remaining "
+
+                        f"₹{member.remaining_amount}"
+
+                    )
 
                 else:
-                    message = f"{member.name} attendance marked successfully"
+
+                    message = (
+
+                        f"{member.name} attendance marked "
+
+                        f"successfully"
+
+                    )
 
     today_records = Attendance.query.filter_by(
+
         date=date.today()
+
     ).all()
 
     today_count = len(today_records)
 
-    history_records = Attendance.query.order_by(
+    selected_month = request.args.get("month")
+
+    selected_year = request.args.get("year")
+
+    search = request.args.get("search")
+
+    history_query = Attendance.query.join(Member)
+
+    if search:
+
+        history_query = history_query.filter(
+
+            Member.name.ilike(
+
+                f"%{search}%"
+
+            )
+
+        )
+
+    if selected_month:
+
+        history_query = history_query.filter(
+
+            db.extract(
+
+                "month",
+
+                Attendance.date
+
+            ) == int(selected_month)
+
+        )
+
+    if selected_year:
+
+        history_query = history_query.filter(
+
+            db.extract(
+
+                "year",
+
+                Attendance.date
+
+            ) == int(selected_year)
+
+        )
+
+    history_records = history_query.order_by(
+
         Attendance.date.desc()
-    ).limit(100).all()
+
+    ).all()
 
     return render_template(
+
         "attendance.html",
+
         message=message,
+
         today_records=today_records,
+
         history_records=history_records,
-        today_count=today_count
+
+        today_count=today_count,
+
+        selected_month=selected_month,
+
+        selected_year=selected_year
+
     )
 if __name__ == "__main__":
     with app.app_context():
