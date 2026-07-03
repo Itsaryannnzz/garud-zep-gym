@@ -107,7 +107,9 @@ def get_plan_amount(plan):
 
 @app.route("/owner-login", methods=["GET", "POST"])
 def owner_login():
+
     if request.method == "POST":
+
         username = request.form["username"]
         password = request.form["password"]
 
@@ -357,7 +359,7 @@ def partial_payment(id):
 
     cash_now = int(request.form.get("cash_amount") or 0)
     online_now = int(request.form.get("online_amount") or 0)
-    
+
     plan_amount = get_plan_amount(member.plan)
 
     member.cash_paid += cash_now

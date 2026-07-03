@@ -15,7 +15,7 @@
 
         <h2>Owner Login</h2>
 
-        <form method="POST">
+        <form method="POST" action="{{ url_for('owner_login') }}">
             <input type="text" name="username" class="form-control mb-3" placeholder="Username" required>
 
             <input type="password" name="password" class="form-control mb-3" placeholder="Password" required>
