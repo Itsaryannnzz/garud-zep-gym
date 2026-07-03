@@ -1012,7 +1012,7 @@ color:white !important;
 }
 
 .dashboard-table{
-    overflow:hidden;
+    overflow-x:auto;
 }
 
 .dashboard-table table{
@@ -1110,8 +1110,9 @@ color:white !important;
     padding: 5px;
 }
 .dashboard-table table{
-    table-layout: fixed;
-    width:100%;
+    table-layout: auto;
+    width: max-content;
+    min-width: 1400px;
 }
 
 .dashboard-table th,
@@ -1151,4 +1152,13 @@ color:white !important;
 
 .payment-input{
     font-size:12px;
+}
+.dashboard-table th,
+.dashboard-table td{
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.table-responsive{
+    overflow-x: auto;
 }
