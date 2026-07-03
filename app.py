@@ -119,10 +119,10 @@ def owner_login():
         return "Invalid Username or Password"
 
     return render_template("owner-login.html")
+
+
 @app.route("/owner-dashboard")
 def owner_dashboard():
-
-    return "Dashboard Working"
 
     members = Member.query.all()
 
