@@ -533,156 +533,72 @@ def attendance():
         ).first()
 
         if not member:
-
             message = "Member not found"
 
         elif not member.is_active:
-
             message = (
                 f"⚠ {member.name} is Deactivated. "
                 f"Attendance not marked."
             )
 
         else:
-
             today_attendance = Attendance.query.filter_by(
-
                 member_id=member.id,
-
                 date=date.today()
-
             ).first()
 
             if today_attendance:
-
-                message = (
-                    f"{member.name} already marked present today"
-                )
+                message = f"{member.name} already marked present today"
 
             else:
-
                 attendance = Attendance(
-
                     member_id=member.id
-
                 )
 
                 db.session.add(attendance)
-
                 db.session.commit()
 
                 if member.expiry_date < date.today():
-
                     message = (
-
-                        f"⚠ {member.name} attendance marked "
-
-                        f"successfully but membership expired "
-
-                        f"on {member.expiry_date}"
-
+                        f"⚠ {member.name} attendance marked successfully "
+                        f"but membership expired on {member.expiry_date}"
                     )
 
                 elif member.remaining_amount > 0:
-
                     message = (
-
-                        f"⚠ {member.name} attendance marked "
-
-                        f"successfully but fees remaining "
-
-                        f"₹{member.remaining_amount}"
-
+                        f"⚠ {member.name} attendance marked successfully "
+                        f"but fees remaining ₹{member.remaining_amount}"
                     )
 
                 else:
-
-                    message = (
-
-                        f"{member.name} attendance marked "
-
-                        f"successfully"
-
-                    )
+                    message = f"{member.name} attendance marked successfully"
 
     today_records = Attendance.query.filter_by(
-
         date=date.today()
-
     ).all()
 
     today_count = len(today_records)
 
-    selected_month = request.args.get("month")
+    selected_date = request.args.get("selected_date")
 
-    selected_year = request.args.get("year")
+    history_records = []
 
-    search = request.args.get("search")
+    if selected_date:
+        filter_date = date.fromisoformat(selected_date)
 
-    history_query = Attendance.query.join(Member)
-
-    if search:
-
-        history_query = history_query.filter(
-
-            Member.name.ilike(
-
-                f"%{search}%"
-
-            )
-
-        )
-
-    if selected_month:
-
-        history_query = history_query.filter(
-
-            db.extract(
-
-                "month",
-
-                Attendance.date
-
-            ) == int(selected_month)
-
-        )
-
-    if selected_year:
-
-        history_query = history_query.filter(
-
-            db.extract(
-
-                "year",
-
-                Attendance.date
-
-            ) == int(selected_year)
-
-        )
-
-    history_records = history_query.order_by(
-
-        Attendance.date.desc()
-
-    ).all()
+        history_records = Attendance.query.filter(
+            Attendance.date == filter_date
+        ).order_by(
+            Attendance.date.desc()
+        ).all()
 
     return render_template(
-
         "attendance.html",
-
         message=message,
-
         today_records=today_records,
-
         history_records=history_records,
-
         today_count=today_count,
-
-        selected_month=selected_month,
-
-        selected_year=selected_year
-
+        selected_date=selected_date
     )
 if __name__ == "__main__":
     with app.app_context():

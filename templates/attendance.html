@@ -8,7 +8,8 @@
 <body>
 
 <section class="login-section">
-    <div class="login-box">
+    <div class="login-box attendance-box">
+
         <h2>Gym Attendance</h2>
 
         <form method="POST">
@@ -53,87 +54,48 @@ Today's Attendance :
 
 <h3 class="mt-4">Today's Present Members</h3>
 
-<table class="table table-dark table-bordered mt-3">
+<table class="table table-dark table-bordered table-sm mt-3 attendance-table">
     <tr>
         <th>Gym No</th>
-        <th>Name</th>
-        <th>Phone</th>
-        <th>Date</th>
+<th>Name</th>
+
+<th>Date</th>
+<th>Expiry</th>
+<th>Due</th>
     </tr>
 
     {% for record in today_records %}
     <tr>
         <td>{{ record.member.gym_number }}</td>
         <td>{{ record.member.name }}</td>
-        <td>{{ record.member.phone }}</td>
-        <td>{{ record.date }}</td>
+        
+        <td>{{ record.date }}</td><td>{{ record.member.expiry_date }}</td>
+
+        <td>{{ record.member.remaining_amount }}</td>
+
     </tr>
     {% endfor %}
 </table>
 
 {% endif %}
 
-<h3 class="mt-4">
-Filter Attendance History
-</h3>
+<h3 class="mt-4">Filter Attendance History</h3>
 
-<form method="GET" class="row g-2 mb-3"></form>
+<form method="GET" action="{{ url_for('attendance') }}" class="row g-2 mb-3">
 
+    <div class="col-md-8">
+        <input
+            type="date"
+            name="selected_date"
+            class="form-control"
+            value="{{ selected_date or '' }}">
+    </div>
 
-<div class="col-md-4">
-    <input
-        type="text"
-        name="search"
-        class="form-control"
-        placeholder="Search Member Name"
-        value="{{ request.args.get('search','') }}">
-</div>
-
-<div class="col-md-3">
-
-<select name="month" class="form-control">
-
-<option value="">
-Select Month
-</option>
-
-{% for m in range(1,13) %}
-
-<option value="{{m}}">
-
-{{m}}
-
-</option>
-
-{% endfor %}
-
-</select>
-
-</div>
-
-
-<div class="col-md-3">
-
-<input type="number"
-
-name="year"
-
-class="form-control"
-
-placeholder="Enter Year">
-
-</div>
-
-
-<div class="col-md-2">
-
-<button class="btn btn-warning w-100">
-
-Search
-
-</button>
-
-</div>
+    <div class="col-md-4">
+        <button type="submit" class="btn btn-warning w-100">
+            Search
+        </button>
+    </div>
 
 </form>
 {% if history_records %}
@@ -142,18 +104,24 @@ Search
 
 <table class="table table-dark table-bordered mt-3">
     <tr>
-        <th>Gym No</th>
-        <th>Name</th>
-        <th>Phone</th>
-        <th>Date</th>
+        <th style="width:70px;">Gym No</th>
+
+<th style="width:150px;">Name</th>
+
+<th style="width:120px;">Phone</th>
+
+<th style="width:110px;">Date</th>
+
+
     </tr>
 
     {% for record in history_records %}
     <tr>
         <td>{{ record.member.gym_number }}</td>
-        <td>{{ record.member.name }}</td>
-        <td>{{ record.member.phone }}</td>
-        <td>{{ record.date }}</td>
+<td>{{ record.member.name }}</td>
+<td>{{ record.member.phone }}</td>
+<td>{{ record.date }}</td>
+
     </tr>
     {% endfor %}
 </table>

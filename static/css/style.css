@@ -1018,3 +1018,79 @@ color:white !important;
 .dashboard-table table{
     min-width:1000px;
 }
+.attendance-box{
+    max-width: 950px;
+    width: 90%;
+}
+.attendance-box table{
+    font-size:13px;
+}
+
+.attendance-box th,
+.attendance-box td{
+    padding:6px 8px;
+}
+.table th,
+.table td{
+    padding:4px 6px;
+    font-size:13px;
+}
+.table{
+    table-layout: fixed;
+    width:100%;
+}
+
+.table th,
+.table td{
+    white-space: nowrap;
+}
+.attendance-table{
+    table-layout: fixed;
+    width: 100%;
+}
+
+.attendance-table th,
+.attendance-table td{
+    padding: 4px 5px;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.attendance-table th:nth-child(1),
+.attendance-table td:nth-child(1){
+    width: 55px;
+}
+
+.attendance-table th:nth-child(2),
+.attendance-table td:nth-child(2){
+    width: 95px;
+}
+
+.attendance-table th:nth-child(3),
+.attendance-table td:nth-child(3){
+    width: 95px;
+}
+
+.attendance-table th:nth-child(4),
+.attendance-table td:nth-child(4){
+    width: 85px;
+}
+
+.attendance-table th:nth-child(5),
+.attendance-table td:nth-child(5){
+    width: 85px;
+}
+
+.attendance-table th:nth-child(6),
+.attendance-table td:nth-child(6){
+    width: 55px;
+}
+.attendance-table th,
+.attendance-table td{
+    padding:4px 5px;
+    font-size:12px;
+    text-align:center;
+    white-space:nowrap;
+}
