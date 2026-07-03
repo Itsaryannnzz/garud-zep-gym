@@ -1008,7 +1008,7 @@ color:white !important;
 }
 .table-responsive{
     overflow-x:auto;
-    width:100%;
+    -webkit-overflow-scrolling:touch;
 }
 
 .dashboard-table{
@@ -1016,7 +1016,8 @@ color:white !important;
 }
 
 .dashboard-table table{
-    min-width:1000px;
+    min-width:1500px;
+    width:max-content;
 }
 .attendance-box{
     max-width: 950px;
@@ -1161,4 +1162,42 @@ color:white !important;
 
 .table-responsive{
     overflow-x: auto;
+}
+.dashboard-table th{
+    white-space:nowrap;
+    padding:12px 18px;
+    font-size:14px;
+}
+
+.dashboard-table td{
+    white-space:nowrap;
+    padding:12px 18px;
+    font-size:14px;
+}
+
+.action-cell{
+    min-width:180px;
+}
+
+.payment-input{
+    min-width:130px;
+}
+
+.dashboard-table{
+    overflow-x:auto;
+}
+@media(max-width:768px){
+
+.dashboard-table table{
+    min-width:1700px;
+}
+
+.dashboard-table td{
+    font-size:13px;
+}
+
+.dashboard-table th{
+    font-size:13px;
+}
+
 }
