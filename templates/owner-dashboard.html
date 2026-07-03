@@ -127,7 +127,10 @@ placeholder="Search by Name, Phone or Plan">
 {% for member in members %}
 
 <tr class="
-{% if member.payment_status == 'Partial' %}
+{% if member.expiry_date < current_date %}
+pending-row
+
+{% elif member.payment_status == 'Partial' %}
 partial-row
 
 {% elif member.payment_status == 'Pending' %}
@@ -151,7 +154,13 @@ pending-row
 
     <td>
 
-{% if member.payment_status == "Paid" %}
+{% if member.expiry_date <= current_date %}
+
+<span class="badge bg-danger">
+Expired
+</span>
+
+{% elif member.payment_status == "Paid" %}
 
 <span class="badge bg-success">
 Paid
@@ -174,6 +183,10 @@ Pending
 </td>
 
     <td class="action-cell">
+        <a href="{{ url_for('edit_member', id=member.id) }}"
+   class="btn btn-primary btn-sm mb-1">
+   Edit
+</a>
         {% if member.payment_status != "Paid" %}
 
 <form action="{{ url_for('partial_payment', id=member.id) }}"
@@ -203,11 +216,9 @@ Pending
 {% endif %}
         
 
-        <a href="{{ url_for('download_receipt', id=member.id) }}"
-           class="btn btn-primary btn-sm">PDF</a>
+        
 
-        {% if member.expiry_date < current_date
-      and member.payment_status != "Paid" %}
+        {% if member.expiry_date <= current_date %}
 <a href="{{ url_for('renew_member', id=member.id) }}"
    class="btn btn-warning btn-sm"
    onclick="return confirm('Renew this member?')">

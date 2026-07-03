@@ -117,7 +117,6 @@ def owner_login():
         return "Invalid Username or Password"
 
     return render_template("owner-login.html")
-
 @app.route("/owner-dashboard")
 def owner_dashboard():
 
@@ -356,9 +355,9 @@ def payment_success(id, amount):
 def partial_payment(id):
     member = Member.query.get_or_404(id)
 
-    cash_now = int(request.form.get("cash_amount", 0))
-    online_now = int(request.form.get("online_amount", 0))
-
+    cash_now = int(request.form.get("cash_amount") or 0)
+    online_now = int(request.form.get("online_amount") or 0)
+    
     plan_amount = get_plan_amount(member.plan)
 
     member.cash_paid += cash_now
@@ -506,6 +505,36 @@ def pay_partial(id):
         amount=amount,
         partial=True
     )
+@app.route("/edit-member/<int:id>", methods=["GET", "POST"])
+def edit_member(id):
+
+    member = Member.query.get_or_404(id)
+
+    if request.method == "POST":
+
+        member.plan = request.form["plan"]
+        member.join_date = date.fromisoformat(request.form["join_date"])
+        member.expiry_date = date.fromisoformat(request.form["expiry_date"])
+
+        plan_amount = get_plan_amount(member.plan)
+
+        member.remaining_amount = plan_amount - member.paid_amount
+
+        if member.remaining_amount <= 0:
+            member.remaining_amount = 0
+            member.payment_status = "Paid"
+
+        elif member.paid_amount > 0:
+            member.payment_status = "Partial"
+
+        else:
+            member.payment_status = "Pending"
+
+        db.session.commit()
+
+        return redirect(url_for("owner_dashboard"))
+
+    return render_template("edit-member.html", member=member)
 @app.route("/attendance", methods=["GET", "POST"])
 def attendance():
 
