@@ -456,6 +456,12 @@ def renew_member(id):
     db.session.commit()
 
     return redirect(url_for("owner_dashboard"))
+    @app.route("/update-db")
+def update_db():
+
+    db.create_all()
+
+    return "Database Updated Successfully"
 @app.route("/init-db")
 def init_db():
     db.create_all()
