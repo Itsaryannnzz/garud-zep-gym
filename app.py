@@ -400,9 +400,28 @@ def activate_member(id):
 @app.route("/update-db")
 def update_db():
 
-    with app.app_context():
+    with db.engine.connect() as connection:
 
-        db.create_all()
+        try:
+            connection.execute(
+                db.text(
+                    """
+                    CREATE TABLE IF NOT EXISTS payment (
+                        id SERIAL PRIMARY KEY,
+                        member_id INTEGER REFERENCES member(id),
+                        amount INTEGER,
+                        payment_type VARCHAR(20),
+                        payment_date DATE DEFAULT CURRENT_DATE
+                    )
+                    """
+                )
+            )
+        except Exception as e:
+            return str(e)
+
+        connection.commit()
+
+    return "Payment table created successfully"
 
     return "Database Updated Successfully"
 @app.route("/renew-member/<int:id>")
