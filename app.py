@@ -3,11 +3,13 @@ from enum import member
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import date, timedelta, datetime
+import calendar
 from flask import send_file
 from reportlab.pdfgen import canvas
 import io
-import razorpay
+
 import os
+
 
 app = Flask(__name__)
 
@@ -20,12 +22,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
-client = razorpay.Client(
-    auth=(
-        "rzp_test_T7Uqz37x8YboyU",
-        "9P1mS7NkpFpe1JHAmOfr5h09"
-    )
-)
+
 
 class Member(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -57,53 +54,83 @@ def get_next_gym_number():
         return last_member.gym_number + 1
 
     return 1
+
+
+def get_plan_amount(plan):
+
+    if "₹600" in plan:
+        return 600
+
+    elif "₹800" in plan:
+        return 800
+
+    elif "₹1800" in plan:
+        return 1800
+
+    elif "₹3999" in plan:
+        return 3999
+
+    return 0
+def add_months(start_date, months):
+
+    month = start_date.month - 1 + months
+    year = start_date.year + month // 12
+    month = month % 12 + 1
+
+    day = min(
+        start_date.day,
+        calendar.monthrange(year, month)[1]
+    )
+
+    return date(year, month, day)
 @app.route("/register-member", methods=["POST"])
 def register_member():
 
     plan = request.form["plan"]
 
+    join_date = date.fromisoformat(
+        request.form["join_date"]
+    )
+
     if "3 Month" in plan or "VIP" in plan:
-        expiry = date.today() + timedelta(days=90)
+        expiry = add_months(join_date, 3)
     else:
-        expiry = date.today() + timedelta(days=30)
+        expiry = add_months(join_date, 1)
 
     existing_member = Member.query.filter(
-    (Member.name == request.form["name"]) |
-    (Member.phone == request.form["phone"])
-).first()
+        (Member.name == request.form["name"]) |
+        (Member.phone == request.form["phone"])
+    ).first()
 
     if existing_member:
         return "Member already exists!"
+
     plan_amount = get_plan_amount(plan)
+
     gym_number = get_next_gym_number()
+
     member = Member(
+        gym_number=gym_number,
+        name=request.form["name"],
+        phone=request.form["phone"],
+        age=int(request.form["age"]),
+        plan=plan,
+        goal=request.form["goal"],
+        join_date=join_date,
+        expiry_date=expiry,
+        cash_paid=0,
+        online_paid=0,
+        paid_amount=0,
+        remaining_amount=plan_amount,
+        payment_status="Pending",
+        is_active=True
+    )
 
-    gym_number=gym_number,
-
-    name=request.form["name"],
-    phone=request.form["phone"],
-    age=int(request.form["age"]),
-    plan=plan,
-    goal=request.form["goal"],
-    expiry_date=expiry,
-    paid_amount=0,
-    remaining_amount=plan_amount
-
-)
     db.session.add(member)
     db.session.commit()
 
     return render_template("success.html")
-def get_plan_amount(plan):
-    if "₹600" in plan:
-        return 600
-    elif "₹800" in plan:
-        return 800
-    elif "₹1800" in plan:
-        return 1800
-    elif "₹3999" in plan:
-        return 3999
-    return 0
+    
 
 @app.route("/owner-login", methods=["GET", "POST"])
 def owner_login():
@@ -134,37 +161,65 @@ def owner_dashboard():
     )
 
     expiring_members = Member.query.filter(
+        Member.expiry_date.isnot(None),
         Member.expiry_date <= date.today() + timedelta(days=3)
     ).all()
 
     expiry_alerts = len(expiring_members)
 
     today_attendance_count = Attendance.query.filter_by(
-     date=date.today()
+        date=date.today()
     ).count()
 
     weekly_collection = sum(
-        member.paid_amount
-        for member in members
-        if member.join_date >= date.today() - timedelta(days=7)
+        payment.amount
+        for payment in Payment.query.filter(
+            Payment.payment_date >= date.today() - timedelta(days=7)
+        ).all()
     )
 
-    monthly_collection = sum(
-        member.paid_amount
-        for member in members
-        if member.join_date >= date.today() - timedelta(days=30)
-    )
+    selected_month = request.args.get("month", type=int)
+
+    if selected_month:
+        monthly_collection = sum(
+            payment.amount
+            for payment in Payment.query.filter(
+                db.extract("month", Payment.payment_date) == selected_month,
+                db.extract("year", Payment.payment_date) == date.today().year
+            ).all()
+        )
+    else:
+        monthly_collection = 0
 
     yearly_collection = sum(
-        member.paid_amount
-        for member in members
-        if member.join_date >= date.today() - timedelta(days=365)
+        payment.amount
+        for payment in Payment.query.filter(
+            Payment.payment_date >= date.today() - timedelta(days=365)
+        ).all()
     )
 
     total_fees = sum(
-        member.paid_amount
-        for member in members
+        payment.amount
+        for payment in Payment.query.all()
     )
+
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+
+    filtered_collection = None
+
+    if start_date and end_date:
+
+        s = date.fromisoformat(start_date)
+        e = date.fromisoformat(end_date)
+
+        filtered_collection = sum(
+            payment.amount
+            for payment in Payment.query.filter(
+                Payment.payment_date >= s,
+                Payment.payment_date <= e
+            ).all()
+        )
 
     return render_template(
         "owner-dashboard.html",
@@ -178,8 +233,31 @@ def owner_dashboard():
         weekly_collection=weekly_collection,
         monthly_collection=monthly_collection,
         yearly_collection=yearly_collection,
-        current_date=date.today()
+        current_date=date.today(),
+        selected_month=selected_month,
+        start_date=start_date,
+        end_date=end_date,
+        filtered_collection=filtered_collection
     )
+class Payment(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    member_id = db.Column(
+        db.Integer,
+        db.ForeignKey("member.id")
+    )
+
+    amount = db.Column(db.Integer)
+
+    payment_type = db.Column(db.String(20))
+
+    payment_date = db.Column(
+        db.Date,
+        default=date.today
+    )
+
+    member = db.relationship("Member")
 class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     member_id = db.Column(db.Integer, db.ForeignKey("member.id"))
@@ -220,10 +298,10 @@ def mark_paid(id):
     member.remaining_amount = 0
     member.payment_status = "Paid"
 
-    if "3 Month" in member.plan or "VIP" in member.plan:
-        member.expiry_date = date.today() + timedelta(days=90)
+    if "3 Month" in member.plan or "VIP" in    member.plan:
+     member.expiry_date = add_months(date.today(), 3)
     else:
-        member.expiry_date = date.today() + timedelta(days=30)
+     member.expiry_date = add_months(date.today(), 1)
 
     db.session.commit()
 
@@ -258,109 +336,48 @@ def download_receipt(id):
         download_name=f"receipt_{member.name}.pdf",
         mimetype="application/pdf"
     )
-@app.route("/member-login", methods=["GET", "POST"])
-def member_login():
-    if request.method == "POST":
-        phone = request.form["phone"]
-
-        member = Member.query.filter_by(phone=phone).first()
-
-        if member:
-            return redirect(url_for("member_dashboard", id=member.id))
-
-        return "Member Not Found"
-
-    return render_template("member-login.html")
 
 
-@app.route("/member-dashboard/<int:id>")
-def member_dashboard(id):
-    member = Member.query.get_or_404(id)
-
-    return render_template("member-dashboard.html", member=member)
-@app.route("/pay/<int:id>")
-def pay(id):
-
-    member = Member.query.get_or_404(id)
-
-    amount = 0
-
-    if "₹600" in member.plan:
-        amount = 600
-
-    elif "₹800" in member.plan:
-        amount = 800
-
-    elif "₹1800" in member.plan:
-        amount = 1800
-
-    elif "₹3999" in member.plan:
-        amount = 3999
-
-    order = client.order.create({
-
-        "amount": amount * 100,
-
-        "currency": "INR",
-
-        "payment_capture": 1
-
-    })
-
-    return render_template(
-
-        "payment.html",
-
-        member=member,
-
-        order=order,
-
-        amount=amount
-
-    )
-@app.route("/payment-success/<int:id>/<int:amount>")
-def payment_success(id, amount):
-
-    member = Member.query.get_or_404(id)
-
-    plan_amount = get_plan_amount(member.plan)
-
-    member.paid_amount += amount
-
-    member.remaining_amount = plan_amount - member.paid_amount
-
-    if member.remaining_amount <= 0:
-
-        member.remaining_amount = 0
-
-        member.payment_status = "Paid"
-
-        if "3 Month" in member.plan or "VIP" in member.plan:
-            member.expiry_date = date.today() + timedelta(days=90)
-
-        else:
-            member.expiry_date = date.today() + timedelta(days=30)
-
-    else:
-
-        member.payment_status = "Partial"
-
-    db.session.commit()
-
-    return redirect(
-        url_for(
-            "member_dashboard",
-            id=member.id
-        )
-    )
 @app.route("/partial-payment/<int:id>", methods=["POST"])
 def partial_payment(id):
+
     member = Member.query.get_or_404(id)
 
     cash_now = int(request.form.get("cash_amount") or 0)
     online_now = int(request.form.get("online_amount") or 0)
 
     plan_amount = get_plan_amount(member.plan)
+
+    new_total = (
+        member.cash_paid
+        + member.online_paid
+        + cash_now
+        + online_now
+    )
+
+    if new_total > plan_amount:
+        return (
+            f"Payment exceeds plan amount! "
+            f"Maximum allowed is ₹{plan_amount}"
+        )
+
+    if cash_now > 0:
+        db.session.add(
+            Payment(
+                member_id=member.id,
+                amount=cash_now,
+                payment_type="Cash"
+            )
+        )
+
+    if online_now > 0:
+        db.session.add(
+            Payment(
+                member_id=member.id,
+                amount=online_now,
+                payment_type="Online"
+            )
+        )
 
     member.cash_paid += cash_now
     member.online_paid += online_now
@@ -372,12 +389,11 @@ def partial_payment(id):
         member.remaining_amount = 0
         member.payment_status = "Paid"
 
-        if "3 Month" in member.plan or "VIP" in member.plan:
-            member.expiry_date = date.today() + timedelta(days=90)
-        else:
-            member.expiry_date = date.today() + timedelta(days=30)
-    else:
+    elif member.paid_amount > 0:
         member.payment_status = "Partial"
+
+    else:
+        member.payment_status = "Pending"
 
     db.session.commit()
 
@@ -415,7 +431,7 @@ def update_db():
         except:
             pass
 
-        db.session.commit()
+        connection.commit()
 
     return "Database Updated Successfully"
 @app.route("/renew-member/<int:id>")
@@ -433,9 +449,9 @@ def renew_member(id):
     member.is_active = True
 
     if "3 Month" in member.plan or "VIP" in member.plan:
-        member.expiry_date = date.today() + timedelta(days=90)
+        member.expiry_date = add_months(date.today(), 3)
     else:
-        member.expiry_date = date.today() + timedelta(days=30)
+        member.expiry_date = add_months(date.today(), 1)
 
     db.session.commit()
 
@@ -444,25 +460,7 @@ def renew_member(id):
 def init_db():
     db.create_all()
     return "Database tables created successfully!"
-@app.route("/pay-partial/<int:id>", methods=["POST"])
-def pay_partial(id):
-    member = Member.query.get_or_404(id)
 
-    amount = int(request.form["amount"])
-
-    order = client.order.create({
-        "amount": amount * 100,
-        "currency": "INR",
-        "payment_capture": 1
-    })
-
-    return render_template(
-        "payment.html",
-        member=member,
-        order=order,
-        amount=amount,
-        partial=True
-    )
 @app.route("/edit-member/<int:id>", methods=["GET", "POST"])
 def edit_member(id):
 
@@ -470,25 +468,39 @@ def edit_member(id):
 
     if request.method == "POST":
 
+        was_expired = (
+            member.expiry_date is not None
+            and member.expiry_date <= date.today()
+        )
+
         member.plan = request.form["plan"]
         member.join_date = date.fromisoformat(request.form["join_date"])
         member.expiry_date = date.fromisoformat(request.form["expiry_date"])
 
         plan_amount = get_plan_amount(member.plan)
 
-        member.remaining_amount = max(
-        0,
-        plan_amount - member.paid_amount)
-
-        if member.remaining_amount <= 0:
-            member.remaining_amount = 0
-            member.payment_status = "Paid"
-
-        elif member.paid_amount > 0:
-            member.payment_status = "Partial"
-
-        else:
+        if was_expired:
+            member.cash_paid = 0
+            member.online_paid = 0
+            member.paid_amount = 0
+            member.remaining_amount = plan_amount
             member.payment_status = "Pending"
+            member.is_active = True
+        else:
+            member.remaining_amount = max(
+                0,
+                plan_amount - member.paid_amount
+            )
+
+            if member.remaining_amount <= 0:
+                member.remaining_amount = 0
+                member.payment_status = "Paid"
+
+            elif member.paid_amount > 0:
+                member.payment_status = "Partial"
+
+            else:
+                member.payment_status = "Pending"
 
         db.session.commit()
 

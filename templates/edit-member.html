@@ -75,27 +75,27 @@ if(join=="") return;
 
 let d = new Date(join);
 
-if(plan.includes("600")){
+if(plan.includes("₹600")){
 
-d.setMonth(d.getMonth()+1);
-
-}
-
-else if(plan.includes("800")){
-
-d.setMonth(d.getMonth()+1);
+    d.setMonth(d.getMonth()+1);
 
 }
 
-else if(plan.includes("1800")){
+else if(plan.includes("₹800")){
 
-d.setMonth(d.getMonth()+3);
+    d.setMonth(d.getMonth()+1);
 
 }
 
-else if(plan.includes("3999")){
+else if(plan.includes("₹1800")){
 
-d.setMonth(d.getMonth()+3);
+    d.setMonth(d.getMonth()+3);
+
+}
+
+else if(plan.includes("₹3999")){
+
+    d.setMonth(d.getMonth()+3);
 
 }
 
