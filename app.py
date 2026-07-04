@@ -1,14 +1,11 @@
-from enum import member
+
 
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import date, timedelta, datetime
 import calendar
-from flask import send_file
-from reportlab.pdfgen import canvas
-import io
-
 import os
+
 
 
 app = Flask(__name__)
@@ -147,7 +144,25 @@ def owner_login():
 
     return render_template("owner-login.html")
 
+class Payment(db.Model):
 
+    id = db.Column(db.Integer, primary_key=True)
+
+    member_id = db.Column(
+        db.Integer,
+        db.ForeignKey("member.id")
+    )
+
+    amount = db.Column(db.Integer)
+
+    payment_type = db.Column(db.String(20))
+
+    payment_date = db.Column(
+        db.Date,
+        default=date.today
+    )
+
+    member = db.relationship("Member")
 @app.route("/owner-dashboard")
 def owner_dashboard():
 
@@ -239,25 +254,7 @@ def owner_dashboard():
         end_date=end_date,
         filtered_collection=filtered_collection
     )
-class Payment(db.Model):
 
-    id = db.Column(db.Integer, primary_key=True)
-
-    member_id = db.Column(
-        db.Integer,
-        db.ForeignKey("member.id")
-    )
-
-    amount = db.Column(db.Integer)
-
-    payment_type = db.Column(db.String(20))
-
-    payment_date = db.Column(
-        db.Date,
-        default=date.today
-    )
-
-    member = db.relationship("Member")
 class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     member_id = db.Column(db.Integer, db.ForeignKey("member.id"))
@@ -292,7 +289,22 @@ def mark_paid(id):
     remaining = plan_amount - (member.cash_paid + member.online_paid)
 
     if remaining > 0:
-        member.cash_paid += remaining
+
+        db.session.add(
+
+         Payment(
+
+            member_id=member.id,
+
+            amount=remaining,
+
+            payment_type="Cash"
+
+        )
+
+    )
+
+    member.cash_paid += remaining
 
     member.paid_amount = member.cash_paid + member.online_paid
     member.remaining_amount = 0
@@ -306,37 +318,6 @@ def mark_paid(id):
     db.session.commit()
 
     return redirect(url_for("owner_dashboard"))
-@app.route("/download-receipt/<int:id>")
-def download_receipt(id):
-    member = Member.query.get_or_404(id)
-
-    buffer = io.BytesIO()
-    pdf = canvas.Canvas(buffer)
-
-    pdf.setFont("Helvetica-Bold", 18)
-    pdf.drawString(180, 800, "GARUD ZEP GYM")
-
-    pdf.setFont("Helvetica", 12)
-    pdf.drawString(100, 740, f"Receipt ID: GZG-{member.id}")
-    pdf.drawString(100, 710, f"Name: {member.name}")
-    pdf.drawString(100, 680, f"Phone: {member.phone}")
-    pdf.drawString(100, 650, f"Plan: {member.plan}")
-    pdf.drawString(100, 620, f"Status: {member.payment_status}")
-    pdf.drawString(100, 590, f"Join Date: {member.join_date}")
-    pdf.drawString(100, 560, f"Expiry Date: {member.expiry_date}")
-
-    pdf.drawString(100, 500, "Thank you for joining Garud Zep Gym.")
-
-    pdf.save()
-    buffer.seek(0)
-
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name=f"receipt_{member.name}.pdf",
-        mimetype="application/pdf"
-    )
-
 
 @app.route("/partial-payment/<int:id>", methods=["POST"])
 def partial_payment(id):
@@ -416,22 +397,12 @@ def activate_member(id):
     db.session.commit()
 
     return redirect(url_for("owner_dashboard"))
-@app.route('/update-db')
+@app.route("/update-db")
 def update_db():
 
-    with db.engine.connect() as connection:
+    with app.app_context():
 
-        try:
-            connection.execute(
-                db.text(
-                    "ALTER TABLE attendance ADD COLUMN time TIME"
-                )
-            )
-
-        except:
-            pass
-
-        connection.commit()
+        db.create_all()
 
     return "Database Updated Successfully"
 @app.route("/renew-member/<int:id>")
@@ -456,15 +427,11 @@ def renew_member(id):
     db.session.commit()
 
     return redirect(url_for("owner_dashboard"))
-    @app.route("/update-db")
-def update_db():
-
-    db.create_all()
-
-    return "Database Updated Successfully"
 @app.route("/init-db")
 def init_db():
+
     db.create_all()
+
     return "Database tables created successfully!"
 
 @app.route("/edit-member/<int:id>", methods=["GET", "POST"])
@@ -552,7 +519,7 @@ def attendance():
                 db.session.add(attendance)
                 db.session.commit()
 
-                if member.expiry_date < date.today():
+                if member.expiry_date and member.expiry_date < date.today():
                     message = (
                         f"⚠ {member.name} attendance marked successfully "
                         f"but membership expired on {member.expiry_date}"
