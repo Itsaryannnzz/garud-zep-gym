@@ -402,28 +402,23 @@ def update_db():
 
     with db.engine.connect() as connection:
 
-        try:
-            connection.execute(
-                db.text(
-                    """
-                    CREATE TABLE IF NOT EXISTS payment (
-                        id SERIAL PRIMARY KEY,
-                        member_id INTEGER REFERENCES member(id),
-                        amount INTEGER,
-                        payment_type VARCHAR(20),
-                        payment_date DATE DEFAULT CURRENT_DATE
-                    )
-                    """
+        connection.execute(
+            db.text(
+                """
+                CREATE TABLE IF NOT EXISTS payment (
+                    id SERIAL PRIMARY KEY,
+                    member_id INTEGER,
+                    amount INTEGER,
+                    payment_type VARCHAR(20),
+                    payment_date DATE DEFAULT CURRENT_DATE
                 )
+                """
             )
-        except Exception as e:
-            return str(e)
+        )
 
         connection.commit()
 
     return "Payment table created successfully"
-
-    return "Database Updated Successfully"
 @app.route("/renew-member/<int:id>")
 def renew_member(id):
 
