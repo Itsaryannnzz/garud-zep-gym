@@ -69,8 +69,8 @@ def get_plan_amount(plan):
     elif "₹1800" in plan:
         return 1800
 
-    elif "₹3999" in plan:
-        return 3999
+    elif "₹3800" in plan:
+        return 3800
 
     return 0
 def add_months(start_date, months):
