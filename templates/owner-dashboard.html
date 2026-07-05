@@ -335,7 +335,7 @@ Pending
         
 
         {% if member.expiry_date and member.expiry_date <= current_date %}
-<a href="{{ url_for('edit_member', id=member.id) }}"
+<a href="{{ url_for('edit_member', id=member.id, renew=1) }}"
    class="btn btn-warning btn-sm">
    Renew
 </a>

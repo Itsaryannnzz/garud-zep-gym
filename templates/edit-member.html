@@ -45,7 +45,7 @@
        id="join_date"
        name="join_date"
        onchange="updatePlan()"
-               value="{{ member.join_date }}" required>
+               value="{% if renew %}{{ current_date }}{% else %}{{ member.join_date }}{% endif %}" required>
 
         <label>Expiry Date</label>
         <input type="date"

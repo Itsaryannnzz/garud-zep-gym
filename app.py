@@ -16,6 +16,11 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
     "DATABASE_URL",
     "sqlite:///gym.db"
 )
+
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_pre_ping": True,
+    "pool_recycle": 300
+}
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
@@ -493,7 +498,12 @@ def edit_member(id):
 
         return redirect(url_for("owner_dashboard"))
 
-    return render_template("edit-member.html", member=member)
+    return render_template(
+    "edit-member.html",
+    member=member,
+    renew=request.args.get("renew"),
+    current_date=date.today()
+)
 @app.route("/attendance", methods=["GET", "POST"])
 def attendance():
 
