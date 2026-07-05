@@ -3,6 +3,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import date, timedelta, datetime
+from zoneinfo import ZoneInfo
 import calendar
 import os
 
@@ -269,8 +270,9 @@ class Attendance(db.Model):
     time = db.Column(db.Time,
 
     default=lambda:
-
-    datetime.now().time()
+datetime.now(
+    ZoneInfo("Asia/Kolkata")
+).time()
 
 )
     member = db.relationship("Member")
