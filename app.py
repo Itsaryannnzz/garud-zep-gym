@@ -508,6 +508,20 @@ def edit_member(id):
     renew=request.args.get("renew"),
     current_date=date.today()
 )
+@app.route("/backup")
+def backup():
+
+    members = Member.query.all()
+
+    output = "Gym No,Name,Phone,Age,Plan,Goal,Join Date,Expiry Date,Cash,Online,Total Paid,Remaining,Status\n"
+
+    for m in members:
+        output += f"{m.gym_number},{m.name},{m.phone},{m.age},{m.plan},{m.goal},{m.join_date},{m.expiry_date},{m.cash_paid},{m.online_paid},{m.paid_amount},{m.remaining_amount},{m.payment_status}\n"
+
+    return output, 200, {
+        "Content-Type": "text/csv",
+        "Content-Disposition": "attachment; filename=gym_backup.csv"
+    }
 @app.route("/attendance", methods=["GET", "POST"])
 def attendance():
 
