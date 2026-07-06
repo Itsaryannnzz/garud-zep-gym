@@ -177,21 +177,6 @@ Search
 
 </div>
 
-<div class="alert alert-warning mt-4">
-
-<h4>⚠️ Membership Expiry Alerts</h4>
-
-{% for member in expiring_members %}
-
-<p>
-<strong>{{ member.name }}</strong>
-membership expires on
-<strong>{{ member.expiry_date }}</strong>
-</p>
-
-{% endfor %}
-
-</div>
 
 {% if expiring_members %}
 
