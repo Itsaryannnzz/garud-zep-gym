@@ -426,16 +426,15 @@ class="form-control mb-3"
 placeholder="Age"
 required>
 
-<select name="plan" class="form-control" required>
+<select name="plan" class="form-control mb-3" required>
     <option value="">Select Plan</option>
 
     {% for plan in plans %}
     <option value="{{ plan.name }}">
-        {{ plan.name }}
+        {{ plan.name }} - ₹{{ plan.amount }} / {{ plan.months }} Month
     </option>
     {% endfor %}
 </select>
-
 <select
 name="goal"
 class="form-control mb-3"
