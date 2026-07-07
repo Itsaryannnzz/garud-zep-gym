@@ -68,8 +68,8 @@ def get_plan_amount(plan):
     elif "₹1500" in plan:
         return 1500
 
-    elif "₹1800" in plan:
-        return 1800
+    elif "₹2000" in plan:
+        return 2000
 
     elif "₹3800" in plan:
         return 3800
