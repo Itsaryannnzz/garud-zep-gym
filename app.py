@@ -200,6 +200,25 @@ def edit_plan(id):
     db.session.commit()
 
     return redirect(url_for("plans"))
+class Payment(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    member_id = db.Column(
+        db.Integer,
+        db.ForeignKey("member.id")
+    )
+
+    amount = db.Column(db.Integer)
+
+    payment_type = db.Column(db.String(20))
+
+    payment_date = db.Column(
+        db.Date,
+        default=date.today
+    )
+
+    member = db.relationship("Member")
 @app.route("/owner-dashboard")
 def owner_dashboard():
 
@@ -291,25 +310,7 @@ def owner_dashboard():
         end_date=end_date,
         filtered_collection=filtered_collection
     )
-class Payment(db.Model):
 
-    id = db.Column(db.Integer, primary_key=True)
-
-    member_id = db.Column(
-        db.Integer,
-        db.ForeignKey("member.id")
-    )
-
-    amount = db.Column(db.Integer)
-
-    payment_type = db.Column(db.String(20))
-
-    payment_date = db.Column(
-        db.Date,
-        default=date.today
-    )
-
-    member = db.relationship("Member")
 class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     member_id = db.Column(db.Integer, db.ForeignKey("member.id"))
@@ -339,43 +340,78 @@ def delete_member(id):
     return redirect(url_for("owner_dashboard"))
 @app.route("/mark-paid/<int:id>")
 def mark_paid(id):
+
     member = Member.query.get_or_404(id)
 
-    plan_amount = get_plan_amount(member.plan)
+    plan_amount = get_plan_amount(
+        member.plan
+    )
 
-    remaining = plan_amount - (member.cash_paid + member.online_paid)
+    remaining = plan_amount - (
+
+        member.cash_paid
+
+        +
+
+        member.online_paid
+
+    )
 
     if remaining > 0:
 
         db.session.add(
 
-         Payment(
+            Payment(
 
-            member_id=member.id,
+                member_id=member.id,
 
-            amount=remaining,
+                amount=remaining,
 
-            payment_type="Cash"
+                payment_type="Cash"
+
+            )
+
+        )
+
+        member.cash_paid += remaining
+
+    member.paid_amount = (
+
+        member.cash_paid
+
+        +
+
+        member.online_paid
+
+    )
+
+    member.remaining_amount = 0
+
+    member.payment_status = "Paid"
+
+    member.expiry_date = add_months(
+
+        date.today(),
+
+        get_plan_months(
+
+            member.plan
 
         )
 
     )
 
-    member.cash_paid += remaining
-
-    member.paid_amount = member.cash_paid + member.online_paid
-    member.remaining_amount = 0
-    member.payment_status = "Paid"
-
-    if "3 Month" in member.plan or "VIP" in    member.plan:
-     member.expiry_date = add_months(date.today(), 3)
-    else:
-     member.expiry_date = add_months(date.today(), 1)
-
     db.session.commit()
 
-    return redirect(url_for("owner_dashboard"))
+    return redirect(
 
+        url_for(
+
+            "owner_dashboard"
+
+        )
+
+    )
 @app.route("/partial-payment/<int:id>", methods=["POST"])
 def partial_payment(id):
 
