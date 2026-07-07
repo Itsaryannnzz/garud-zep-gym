@@ -62,7 +62,13 @@ class Member(db.Model):
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+
+    plans = GymPlan.query.all()
+
+    return render_template(
+        "index.html",
+        plans=plans
+    )
 def get_next_gym_number():
 
     last_member = Member.query.order_by(
@@ -193,13 +199,29 @@ def edit_plan(id):
 
     plan = GymPlan.query.get_or_404(id)
 
-    plan.name = request.form["name"]
-    plan.amount = int(request.form["amount"])
-    plan.months = int(request.form["months"])
+    plan.amount = int(
+
+        request.form["amount"]
+
+    )
+
+    plan.months = int(
+
+        request.form["months"]
+
+    )
 
     db.session.commit()
 
-    return redirect(url_for("plans"))
+    return redirect(
+
+        url_for(
+
+            "plans"
+
+        )
+
+    )
 class Payment(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
@@ -546,41 +568,43 @@ def init_db():
 
     db.create_all()
 
-    if GymPlan.query.count() == 0:
+    plans = [
 
-        db.session.add(
-            GymPlan(
-                name="₹600 - Gym Access",
-                amount=600,
-                months=1
+        ("₹600 - Gym Access",600,1),
+
+        ("₹800 - Gym + Cardio",800,1),
+
+        ("₹1500 - 3 Month",1500,3),
+
+        ("₹2000 - 3 Month",2000,3),
+
+        ("₹3800 - VIP",3800,3)
+
+    ]
+
+    for name,amount,months in plans:
+
+        exists = GymPlan.query.filter_by(
+            name=name
+        ).first()
+
+        if not exists:
+
+            db.session.add(
+
+                GymPlan(
+
+                    name=name,
+
+                    amount=amount,
+
+                    months=months
+
+                )
+
             )
-        )
 
-        db.session.add(
-            GymPlan(
-                name="₹800 - Gym + Cardio",
-                amount=800,
-                months=1
-            )
-        )
-
-        db.session.add(
-            GymPlan(
-                name="₹1800 - 3 Month",
-                amount=1800,
-                months=3
-            )
-        )
-
-        db.session.add(
-            GymPlan(
-                name="₹3999 - VIP",
-                amount=3999,
-                months=3
-            )
-        )
-
-        db.session.commit()
+    db.session.commit()
 
     return "Database Created Successfully"
 
@@ -643,7 +667,8 @@ def edit_member(id):
     "edit-member.html",
     member=member,
     renew=request.args.get("renew"),
-    current_date=date.today()
+    current_date=date.today(),
+    plans=GymPlan.query.all()
 )
 @app.route("/backup")
 def backup():

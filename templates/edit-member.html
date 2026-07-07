@@ -18,29 +18,17 @@
 <select id="plan"
         name="plan"
         class="form-control mb-3"
-        onchange="updatePlan()">
-    <option value="{{ member.plan }}">
-        Current: {{ member.plan }}
-    </option>
+        onchange="updatePlan()"
+        required>
 
-    <option value="₹600 - Gym Access">
-        ₹600 - Gym Access
+    {% for plan in plans %}
+    <option value="{{ plan.name }}"
+            data-months="{{ plan.months }}"
+            {% if member.plan == plan.name %}selected{% endif %}>
+        {{ plan.name }} - ₹{{ plan.amount }} / {{ plan.months }} Month
     </option>
+    {% endfor %}
 
-    <option value="₹800 - Gym + Cardio">
-        ₹800 - Gym + Cardio
-    </option>
-    <option value="₹1500 - 3 Month">
-    ₹1500 - 3 Month
-    </option>
-
-    <option value="₹2000 - 3 Month">
-        ₹2000 - 3 Month
-    </option>
-
-    <option value="₹3800 - VIP">
-        ₹3800 - VIP
-    </option>
 </select>
 
         <label>Start Date</label>
@@ -65,56 +53,24 @@
 
     </form>
     <script>
-
 function updatePlan(){
 
-let plan =
-document.getElementById("plan").value;
+    let planSelect = document.getElementById("plan");
+    let months = parseInt(
+        planSelect.options[planSelect.selectedIndex].getAttribute("data-months")
+    );
 
-let join =
-document.getElementById("join_date").value;
+    let join = document.getElementById("join_date").value;
 
-if(join=="") return;
+    if(join == "") return;
 
-let d = new Date(join);
+    let d = new Date(join);
 
-if(plan.includes("₹600")){
+    d.setMonth(d.getMonth() + months);
 
-    d.setMonth(d.getMonth()+1);
-
+    document.getElementById("expiry_date").value =
+        d.toISOString().substring(0,10);
 }
-
-else if(plan.includes("₹800")){
-
-    d.setMonth(d.getMonth()+1);
-
-}
-else if(plan.includes("₹1500")){
-
-    d.setMonth(d.getMonth()+3);
-
-}
-
-else if(plan.includes("₹2000")){
-
-    d.setMonth(d.getMonth()+3);
-
-}
-
-else if(plan.includes("₹3800")){
-
-    d.setMonth(d.getMonth()+3);
-
-}
-
-document.getElementById(
-"expiry_date"
-).value =
-d.toISOString()
-.substring(0,10);
-
-}
-
 </script>
 
 </div>

@@ -426,36 +426,14 @@ class="form-control mb-3"
 placeholder="Age"
 required>
 
-<select
-name="plan"
-class="form-control mb-3"
-required>
+<select name="plan" class="form-control" required>
+    <option value="">Select Plan</option>
 
-
-<option value="">
-Select Membership Plan
-</option>
-
-<option>
-₹600 - Gym Access
-</option>
-
-<option>
-₹800 - Gym + Cardio
-</option>
-<option value="₹1500 - 3 Month">
-    ₹1500 - 3 Month
-</option>
-
-
-<option>
-₹2000 - 3 Month Membership
-</option>
-
-<option>
-₹3800 - VIP Plan
-</option>
-
+    {% for plan in plans %}
+    <option value="{{ plan.name }}">
+        {{ plan.name }} - ₹{{ plan.amount }} / {{ plan.months }} month
+    </option>
+    {% endfor %}
 </select>
 
 <select
