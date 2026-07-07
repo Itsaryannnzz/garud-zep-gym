@@ -60,21 +60,30 @@ def get_next_gym_number():
 
 def get_plan_amount(plan):
 
-    if "₹600" in plan:
-        return 600
+    p = GymPlan.query.filter_by(
 
-    elif "₹800" in plan:
-        return 800
-    elif "₹1500" in plan:
-        return 1500
+        name=plan
 
-    elif "₹2000" in plan:
-        return 2000
+    ).first()
 
-    elif "₹3800" in plan:
-        return 3800
+    if p:
+
+        return p.amount
 
     return 0
+def get_plan_months(plan):
+
+    p = GymPlan.query.filter_by(
+
+        name=plan
+
+    ).first()
+
+    if p:
+
+        return p.months
+
+    return 1
 def add_months(start_date, months):
 
     month = start_date.month - 1 + months
@@ -96,10 +105,13 @@ def register_member():
         request.form["join_date"]
     )
 
-    if "3 Month" in plan or "VIP" in plan:
-        expiry = add_months(join_date, 3)
-    else:
-        expiry = add_months(join_date, 1)
+    expiry = add_months(
+
+    join_date,
+
+    get_plan_months(plan)
+
+)
 
     existing_member = Member.query.filter(
         (Member.name == request.form["name"]) |
@@ -150,7 +162,66 @@ def owner_login():
         return "Invalid Username or Password"
 
     return render_template("owner-login.html")
+@app.route("/plans")
+def plans():
 
+    plans = GymPlan.query.all()
+
+    return render_template(
+
+        "plans.html",
+
+        plans=plans
+
+    )
+
+
+@app.route(
+
+"/edit-plan/<int:id>",
+
+methods=["POST"]
+
+)
+
+def edit_plan(id):
+
+    plan = GymPlan.query.get_or_404(id)
+
+    plan.name = request.form["name"]
+
+    plan.amount = int(
+
+        request.form["amount"]
+
+    )
+
+    plan.months = int(
+
+        request.form["months"]
+
+    )
+
+    db.session.commit()
+
+    return redirect(
+
+        url_for(
+
+            "plans"
+
+        )
+
+    )
+class GymPlan(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    name = db.Column(db.String(100))
+
+    amount = db.Column(db.Integer)
+
+    months = db.Column(db.Integer)
 class Payment(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
@@ -442,10 +513,17 @@ def renew_member(id):
     member.payment_status = "Pending"
     member.is_active = True
 
-    if "3 Month" in member.plan or "VIP" in member.plan:
-        member.expiry_date = add_months(date.today(), 3)
-    else:
-        member.expiry_date = add_months(date.today(), 1)
+    member.expiry_date = add_months(
+
+    date.today(),
+
+    get_plan_months(
+
+        member.plan
+
+    )
+
+)
 
     db.session.commit()
 
@@ -455,7 +533,43 @@ def init_db():
 
     db.create_all()
 
-    return "Database tables created successfully!"
+    if GymPlan.query.count() == 0:
+
+        db.session.add(
+            GymPlan(
+                name="₹600 - Gym Access",
+                amount=600,
+                months=1
+            )
+        )
+
+        db.session.add(
+            GymPlan(
+                name="₹800 - Gym + Cardio",
+                amount=800,
+                months=1
+            )
+        )
+
+        db.session.add(
+            GymPlan(
+                name="₹1800 - 3 Month",
+                amount=1800,
+                months=3
+            )
+        )
+
+        db.session.add(
+            GymPlan(
+                name="₹3999 - VIP",
+                amount=3999,
+                months=3
+            )
+        )
+
+        db.session.commit()
+
+    return "Database Created Successfully"
 
 @app.route("/edit-member/<int:id>", methods=["GET", "POST"])
 def edit_member(id):
@@ -471,7 +585,17 @@ def edit_member(id):
 
         member.plan = request.form["plan"]
         member.join_date = date.fromisoformat(request.form["join_date"])
-        member.expiry_date = date.fromisoformat(request.form["expiry_date"])
+        member.expiry_date = add_months(
+
+        member.join_date,
+
+        get_plan_months(
+
+        member.plan
+
+    )
+
+)
 
         plan_amount = get_plan_amount(member.plan)
 
