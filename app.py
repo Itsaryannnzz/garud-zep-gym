@@ -25,7 +25,24 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
+class GymPlan(db.Model):
 
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    name = db.Column(
+        db.String(100)
+    )
+
+    amount = db.Column(
+        db.Integer
+    )
+
+    months = db.Column(
+        db.Integer
+    )
 class Member(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     gym_number = db.Column(db.Integer, unique=True)
@@ -162,85 +179,27 @@ def owner_login():
         return "Invalid Username or Password"
 
     return render_template("owner-login.html")
+
 @app.route("/plans")
 def plans():
 
     plans = GymPlan.query.all()
 
-    return render_template(
-
-        "plans.html",
-
-        plans=plans
-
-    )
+    return render_template("plans.html", plans=plans)
 
 
-@app.route(
-
-"/edit-plan/<int:id>",
-
-methods=["POST"]
-
-)
-
+@app.route("/edit-plan/<int:id>", methods=["POST"])
 def edit_plan(id):
 
     plan = GymPlan.query.get_or_404(id)
 
     plan.name = request.form["name"]
-
-    plan.amount = int(
-
-        request.form["amount"]
-
-    )
-
-    plan.months = int(
-
-        request.form["months"]
-
-    )
+    plan.amount = int(request.form["amount"])
+    plan.months = int(request.form["months"])
 
     db.session.commit()
 
-    return redirect(
-
-        url_for(
-
-            "plans"
-
-        )
-
-    )
-class GymPlan(db.Model):
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    name = db.Column(db.String(100))
-
-    amount = db.Column(db.Integer)
-
-    months = db.Column(db.Integer)
-class Payment(db.Model):
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    member_id = db.Column(
-        db.Integer,
-        db.ForeignKey("member.id")
-    )
-
-    amount = db.Column(db.Integer)
-
-    payment_type = db.Column(db.String(20))
-
-    payment_date = db.Column(
-        db.Date,
-        default=date.today
-    )
-
-    member = db.relationship("Member")
+    return redirect(url_for("plans"))
 @app.route("/owner-dashboard")
 def owner_dashboard():
 
@@ -332,7 +291,25 @@ def owner_dashboard():
         end_date=end_date,
         filtered_collection=filtered_collection
     )
+class Payment(db.Model):
 
+    id = db.Column(db.Integer, primary_key=True)
+
+    member_id = db.Column(
+        db.Integer,
+        db.ForeignKey("member.id")
+    )
+
+    amount = db.Column(db.Integer)
+
+    payment_type = db.Column(db.String(20))
+
+    payment_date = db.Column(
+        db.Date,
+        default=date.today
+    )
+
+    member = db.relationship("Member")
 class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     member_id = db.Column(db.Integer, db.ForeignKey("member.id"))
