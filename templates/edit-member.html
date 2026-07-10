@@ -18,7 +18,7 @@
 <select id="plan"
         name="plan"
         class="form-control mb-3"
-        onchange="updatePlan()"
+        
         required>
 
     {% for plan in plans %}
@@ -35,9 +35,22 @@
         <input type="date"
        id="join_date"
        name="join_date"
-       onchange="updatePlan()"
+       
                value="{% if renew %}{{ current_date }}{% else %}{{ member.join_date }}{% endif %}" required>
-
+<label>Discount</label>
+<select name="discount"
+        class="form-control mb-3">
+    <option value="0">₹0</option>
+    <option value="100">₹100</option>
+    <option value="200">₹200</option>
+    <option value="300">₹300</option>
+    <option value="400">₹400</option>
+    <option value="500">₹500</option>
+    <option value="600">₹600</option>
+    <option value="700">₹700</option>
+    <option value="800">₹800</option>
+    <option value="900">₹900</option>
+</select>
         <label>Expiry Date</label>
         <input type="date"
        id="expiry_date"

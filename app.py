@@ -1,6 +1,6 @@
 
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import date, timedelta, datetime
 import calendar
@@ -9,6 +9,7 @@ import os
 
 
 app = Flask(__name__)
+app.secret_key = "garud_zep_secret_2026"
 
 
 
@@ -180,7 +181,10 @@ def owner_login():
         password = request.form["password"]
 
         if username == "owner" and password == "admin123":
-            return redirect(url_for("owner_dashboard"))
+
+         session["owner_logged_in"] = True
+
+         return redirect(url_for("owner_dashboard"))
 
         return "Invalid Username or Password"
 
@@ -188,6 +192,8 @@ def owner_login():
 
 @app.route("/plans")
 def plans():
+    if not session.get("owner_logged_in"):
+        return redirect(url_for("owner_login"))
 
     plans = GymPlan.query.all()
 
@@ -243,6 +249,9 @@ class Payment(db.Model):
     member = db.relationship("Member")
 @app.route("/owner-dashboard")
 def owner_dashboard():
+
+    if not session.get("owner_logged_in"):
+        return redirect(url_for("owner_login"))
 
     members = Member.query.all()
 
@@ -351,6 +360,8 @@ class Attendance(db.Model):
     
 @app.route("/delete-member/<int:id>")
 def delete_member(id):
+    if not session.get("owner_logged_in"):
+        return redirect(url_for("owner_login"))
 
     member = Member.query.get_or_404(id)
 
@@ -360,82 +371,28 @@ def delete_member(id):
     db.session.commit()
 
     return redirect(url_for("owner_dashboard"))
-@app.route("/mark-paid/<int:id>")
+@app.route("/mark-paid/<int:id>", methods=["POST"])
 def mark_paid(id):
+    if not session.get("owner_logged_in"):
+        return redirect(url_for("owner_login"))
 
     member = Member.query.get_or_404(id)
 
-    plan_amount = get_plan_amount(
-        member.plan
-    )
+    if member.remaining_amount > 0:
 
-    remaining = plan_amount - (
+        member.cash_paid += member.remaining_amount
+        member.paid_amount += member.remaining_amount
 
-        member.cash_paid
+        member.remaining_amount = 0
+        member.payment_status = "Paid"
 
-        +
+        db.session.commit()
 
-        member.online_paid
-
-    )
-
-    if remaining > 0:
-
-        db.session.add(
-
-            Payment(
-
-                member_id=member.id,
-
-                amount=remaining,
-
-                payment_type="Cash"
-
-            )
-
-        )
-
-        member.cash_paid += remaining
-
-    member.paid_amount = (
-
-        member.cash_paid
-
-        +
-
-        member.online_paid
-
-    )
-
-    member.remaining_amount = 0
-
-    member.payment_status = "Paid"
-
-    member.expiry_date = add_months(
-
-        date.today(),
-
-        get_plan_months(
-
-            member.plan
-
-        )
-
-    )
-
-    db.session.commit()
-
-    return redirect(
-
-        url_for(
-
-            "owner_dashboard"
-
-        )
-
-    )
+    return redirect(url_for("owner_dashboard"))
 @app.route("/partial-payment/<int:id>", methods=["POST"])
 def partial_payment(id):
+    if not session.get("owner_logged_in"):
+        return redirect(url_for("owner_login"))
 
     member = Member.query.get_or_404(id)
 
@@ -496,6 +453,8 @@ def partial_payment(id):
     return redirect(url_for("owner_dashboard"))
 @app.route("/deactivate-member/<int:id>")
 def deactivate_member(id):
+    if not session.get("owner_logged_in"):
+        return redirect(url_for("owner_login"))
     member = Member.query.get_or_404(id)
 
     member.is_active = False
@@ -506,6 +465,8 @@ def deactivate_member(id):
 
 @app.route("/activate-member/<int:id>")
 def activate_member(id):
+    if not session.get("owner_logged_in"):
+        return redirect(url_for("owner_login"))
     member = Member.query.get_or_404(id)
 
     member.is_active = True
@@ -514,6 +475,8 @@ def activate_member(id):
     return redirect(url_for("owner_dashboard"))
 @app.route("/update-db")
 def update_db():
+    if not session.get("owner_logged_in"):
+        return redirect(url_for("owner_login"))
 
     with db.engine.connect() as connection:
 
@@ -534,37 +497,11 @@ def update_db():
         connection.commit()
 
     return "Payment table created successfully"
-@app.route("/renew-member/<int:id>")
-def renew_member(id):
 
-    member = Member.query.get_or_404(id)
-
-    plan_amount = get_plan_amount(member.plan)
-
-    member.cash_paid = 0
-    member.online_paid = 0
-    member.paid_amount = 0
-    member.remaining_amount = plan_amount
-    member.payment_status = "Pending"
-    member.is_active = True
-
-    member.expiry_date = add_months(
-
-    date.today(),
-
-    get_plan_months(
-
-        member.plan
-
-    )
-
-)
-
-    db.session.commit()
-
-    return redirect(url_for("owner_dashboard"))
 @app.route("/init-db")
 def init_db():
+    if not session.get("owner_logged_in"):
+        return redirect(url_for("owner_login"))
 
     db.create_all()
 
@@ -610,6 +547,8 @@ def init_db():
 
 @app.route("/edit-member/<int:id>", methods=["GET", "POST"])
 def edit_member(id):
+    if not session.get("owner_logged_in"):
+        return redirect(url_for("owner_login"))
 
     member = Member.query.get_or_404(id)
 
@@ -622,19 +561,18 @@ def edit_member(id):
 
         member.plan = request.form["plan"]
         member.join_date = date.fromisoformat(request.form["join_date"])
-        member.expiry_date = add_months(
-
-        member.join_date,
-
-        get_plan_months(
-
-        member.plan
-
-    )
-
+        member.expiry_date = date.fromisoformat(
+    request.form["expiry_date"]
 )
 
-        plan_amount = get_plan_amount(member.plan)
+        discount = int(
+    request.form.get("discount") or 0
+)
+
+        plan_amount = get_plan_amount(member.plan) - discount
+
+        if plan_amount < 0:
+         plan_amount = 0
 
         if was_expired:
             member.cash_paid = 0
@@ -672,6 +610,8 @@ def edit_member(id):
 )
 @app.route("/backup")
 def backup():
+    if not session.get("owner_logged_in"):
+        return redirect(url_for("owner_login"))
 
     members = Member.query.all()
 
@@ -686,6 +626,8 @@ def backup():
     }
 @app.route("/attendance", methods=["GET", "POST"])
 def attendance():
+    if not session.get("owner_logged_in"):
+        return redirect(url_for("owner_login"))
 
     message = ""
 
@@ -765,6 +707,25 @@ def attendance():
         today_count=today_count,
         selected_date=selected_date
     )
+@app.route("/pending-members")
+def pending_members():
+    if not session.get("owner_logged_in"):
+        return redirect(url_for("owner_login"))
+
+    members = Member.query.filter(
+        Member.remaining_amount > 0
+    ).all()
+
+    return render_template(
+        "pending-members.html",
+        members=members
+    )
+@app.route("/owner-logout")
+def owner_logout():
+
+    session.pop("owner_logged_in", None)
+
+    return redirect(url_for("owner_login"))
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()

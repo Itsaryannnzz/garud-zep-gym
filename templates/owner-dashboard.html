@@ -18,6 +18,10 @@
 class="main-btn">
 Back Home
 </a>
+<a href="{{ url_for('owner_logout') }}"
+class="btn btn-danger">
+Logout
+</a>
 
 <a href="{{ url_for('backup') }}"
 class="main-btn">
@@ -43,13 +47,6 @@ Plans
 <div class="col-md-3">
     <div class="dashboard-card">
         <h3>₹{{ weekly_collection }}</h3>
-<p>Weekly Collection</p>
-    </div>
-</div>
-
-<div class="col-md-3">
-    <div class="dashboard-card">
-        <h3>₹{{ monthly_collection }}</h3>
 
 <p>Monthly Collection</p>
 
@@ -85,11 +82,7 @@ selected
     </div>
 </div>
 
-<div class="col-md-3">
-    <div class="dashboard-card">
-        <h3>₹{{ yearly_collection }}</h3>
-        <p>Yearly Collection</p>
-    </div>
+
 </div>
             <div class="col-md-3">
                 <div class="dashboard-card">
@@ -98,17 +91,18 @@ selected
                 </div>
             </div>
 
-            <div class="col-md-3">
-                <div class="dashboard-card">
-                    <h3>₹{{ total_fees }}</h3>
-                    <p>Total Fees</p>
-                </div>
-            </div>
+            
 
             <div class="col-md-3">
                 <div class="dashboard-card">
-                    <h3>{{ pending_fees }}</h3>
-                    <p>Pending Fees</p>
+                    <h3>
+<a href="{{ url_for('pending_members') }}"
+style="color:white;text-decoration:none;">
+{{ pending_fees }}
+</a>
+</h3>
+
+<p>Pending Fees</p>
                 </div>
             </div>
 
@@ -299,6 +293,22 @@ Pending
    class="btn btn-primary btn-sm mb-1">
    Edit
 </a>
+{% if member.remaining_amount > 0 %}
+
+<form
+action="{{ url_for('mark_paid', id=member.id) }}"
+method="POST">
+
+<button
+class="btn btn-success btn-sm mb-2">
+
+Mark Paid
+
+</button>
+
+</form>
+
+{% endif %}
         {% if member.payment_status != "Paid" %}
 
 <form action="{{ url_for('partial_payment', id=member.id) }}"

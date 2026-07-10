@@ -1,0 +1,25 @@
+<h2>Pending Members</h2>
+
+<table class="table">
+
+<tr>
+<th>Name</th>
+<th>Phone</th>
+<th>Remaining</th>
+</tr>
+
+{% for m in members %}
+
+<tr>
+
+<td>{{m.name}}</td>
+
+<td>{{m.phone}}</td>
+
+<td>₹{{m.remaining_amount}}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
