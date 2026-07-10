@@ -488,7 +488,7 @@ def edit_member(id):
             member.expiry_date is not None
             and member.expiry_date <= date.today()
         )
-
+        member.phone = request.form["phone"]
         member.plan = request.form["plan"]
         member.join_date = date.fromisoformat(request.form["join_date"])
         member.expiry_date = date.fromisoformat(
