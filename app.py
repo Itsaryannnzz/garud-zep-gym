@@ -473,77 +473,7 @@ def activate_member(id):
     db.session.commit()
 
     return redirect(url_for("owner_dashboard"))
-@app.route("/update-db")
-def update_db():
-    if not session.get("owner_logged_in"):
-        return redirect(url_for("owner_login"))
 
-    with db.engine.connect() as connection:
-
-        connection.execute(
-            db.text(
-                """
-                CREATE TABLE IF NOT EXISTS payment (
-                    id SERIAL PRIMARY KEY,
-                    member_id INTEGER,
-                    amount INTEGER,
-                    payment_type VARCHAR(20),
-                    payment_date DATE DEFAULT CURRENT_DATE
-                )
-                """
-            )
-        )
-
-        connection.commit()
-
-    return "Payment table created successfully"
-
-@app.route("/init-db")
-def init_db():
-    if not session.get("owner_logged_in"):
-        return redirect(url_for("owner_login"))
-
-    db.create_all()
-
-    plans = [
-
-        ("₹600 - Gym Access",600,1),
-
-        ("₹800 - Gym + Cardio",800,1),
-
-        ("₹1500 - 3 Month",1500,3),
-
-        ("₹2000 - 3 Month",2000,3),
-
-        ("₹3800 - VIP",3800,3)
-
-    ]
-
-    for name,amount,months in plans:
-
-        exists = GymPlan.query.filter_by(
-            name=name
-        ).first()
-
-        if not exists:
-
-            db.session.add(
-
-                GymPlan(
-
-                    name=name,
-
-                    amount=amount,
-
-                    months=months
-
-                )
-
-            )
-
-    db.session.commit()
-
-    return "Database Created Successfully"
 
 @app.route("/edit-member/<int:id>", methods=["GET", "POST"])
 def edit_member(id):
