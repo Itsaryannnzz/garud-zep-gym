@@ -15,16 +15,37 @@
 
         <h2>Owner Login</h2>
 
-        <form method="POST" action="{{ url_for('owner_login') }}">
-            <input type="text" name="username" class="form-control mb-3" placeholder="Username" required>
+        {% if error %}
+<div class="alert alert-danger mb-3">
+    {{ error }}
+</div>
+{% endif %}
 
-            <input type="password" name="password" class="form-control mb-3" placeholder="Password" required>
+<form method="POST" action="{{ url_for('owner_login') }}">
 
-            <button type="submit" class="main-btn border-0 w-100">
-                Login
-            </button>
-        </form>
+    <input
+        type="text"
+        name="username"
+        class="form-control mb-3"
+        placeholder="Username"
+        required>
 
+    <input
+        type="password"
+        name="password"
+        class="form-control mb-3"
+        placeholder="Password"
+        required>
+
+    <button
+        type="submit"
+        class="main-btn border-0 w-100">
+
+        Login
+
+    </button>
+
+</form>
         <p class="mt-4">
             <a href="{{ url_for('home') }}" class="text-danger">
                 Back to Home

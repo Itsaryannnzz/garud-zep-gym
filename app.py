@@ -9,6 +9,14 @@ import os
 
 
 app = Flask(__name__)
+@app.after_request
+def add_header(response):
+
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+
+    return response
 app.secret_key = "garud_zep_secret_2026"
 
 
@@ -25,7 +33,20 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+class Owner(db.Model):
 
+    id = db.Column(db.Integer, primary_key=True)
+
+    username = db.Column(
+        db.String(50),
+        unique=True,
+        nullable=False
+    )
+
+    password = db.Column(
+        db.String(200),
+        nullable=False
+    )
 class GymPlan(db.Model):
 
     id = db.Column(
@@ -175,21 +196,31 @@ def register_member():
 @app.route("/owner-login", methods=["GET", "POST"])
 def owner_login():
 
+    if session.get("owner_logged_in"):
+        return redirect(url_for("owner_dashboard"))
+
     if request.method == "POST":
 
-        username = request.form["username"]
+        username = request.form["username"].strip()
         password = request.form["password"]
 
-        if username == "admin" and password == "garudzep2009":
+        owner = Owner.query.filter_by(
+            username=username
+        ).first()
 
-         session["owner_logged_in"] = True
+        if owner and owner.password == password:
 
-         return redirect(url_for("owner_dashboard"))
+            session.clear()
+            session["owner_logged_in"] = True
 
-        return "Invalid Username or Password"
+            return redirect(url_for("owner_dashboard"))
+
+        return render_template(
+            "owner-login.html",
+            error="Invalid Username or Password"
+        )
 
     return render_template("owner-login.html")
-
 @app.route("/plans")
 def plans():
     if not session.get("owner_logged_in"):
@@ -650,14 +681,72 @@ def pending_members():
         "pending-members.html",
         members=members
     )
+@app.route("/change-password", methods=["GET","POST"])
+def change_password():
+
+    if not session.get("owner_logged_in"):
+        return redirect(url_for("owner_login"))
+
+    owner = Owner.query.first()
+
+    message = ""
+
+    if request.method == "POST":
+
+        old = request.form["old"]
+
+        new = request.form["new"]
+
+        confirm = request.form["confirm"]
+
+        if owner.password != old:
+
+            message = "Old Password Incorrect"
+
+        elif new != confirm:
+
+            message = "Passwords do not match"
+
+        else:
+
+            owner.password = new
+
+            
+
+            db.session.commit()
+
+        return redirect(url_for("owner_dashboard"))
+
+    return render_template(
+        "change-password.html",
+        message=message
+    )
 @app.route("/owner-logout")
 def owner_logout():
 
-    session.pop("owner_logged_in", None)
+    session.clear()
 
-    return redirect(url_for("owner_login"))
+    response = redirect(url_for("owner_login"))
+
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+
+    return response
 if __name__ == "__main__":
+
     with app.app_context():
+
         db.create_all()
+
+        if not Owner.query.first():
+
+            owner = Owner(
+                username="admin",
+                password="garudzep2009"
+            )
+
+            db.session.add(owner)
+            db.session.commit()
 
     app.run(debug=True)
