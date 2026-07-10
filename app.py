@@ -180,7 +180,7 @@ def owner_login():
         username = request.form["username"]
         password = request.form["password"]
 
-        if username == "owner" and password == "admin123":
+        if username == "admin" and password == "garudzep2009":
 
          session["owner_logged_in"] = True
 
