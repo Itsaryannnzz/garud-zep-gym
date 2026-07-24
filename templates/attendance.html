@@ -13,16 +13,21 @@
         <h2>Gym Attendance</h2>
 
         <form method="POST">
-            <input type="number"
-                   name="gym_number"
-                   class="form-control mb-3"
-                   placeholder="Enter gym Number"
-                   required>
 
-            <button class="main-btn w-100">
-                Mark Attendance
-            </button>
-        </form>
+    <input
+        type="number"
+        id="gym_number"
+        name="gym_number"
+        class="form-control mb-3"
+        placeholder="Enter Gym Number"
+        required
+        autofocus>
+
+    <button class="main-btn w-100">
+        Mark Attendance
+    </button>
+
+</form>
 
         {% if message %}
 
@@ -145,26 +150,14 @@ Today's Attendance :
     </div>
 </section>
 <script>
-window.onload = function(){
-
+window.onload = function () {
     const input = document.getElementById("gym_number");
 
-    if(input){
-
-        const x = window.scrollX;
-        const y = window.scrollY;
-
-        input.value = "";
-
+    if (input) {
         input.focus();
-
-        window.scrollTo(x, y);
-
     }
-
-}
+};
 </script>
 
-</script>
 </body>
 </html>

@@ -70,7 +70,6 @@ class Member(db.Model):
     gym_number = db.Column(db.Integer, unique=True)
     name = db.Column(db.String(100))
     phone = db.Column(db.String(20))
-    age = db.Column(db.Integer)
     plan = db.Column(db.String(100))
     goal = db.Column(db.String(100))
     join_date = db.Column(db.Date, default=date.today)
@@ -174,7 +173,6 @@ def register_member():
         gym_number=gym_number,
         name=request.form["name"],
         phone=request.form["phone"],
-        age=int(request.form["age"]),
         plan=plan,
         join_date=join_date,
         expiry_date=expiry,
@@ -586,6 +584,7 @@ def backup():
     }
 @app.route("/attendance", methods=["GET", "POST"])
 def attendance():
+
     if not session.get("owner_logged_in"):
         return redirect(url_for("owner_login"))
 
@@ -600,24 +599,26 @@ def attendance():
         ).first()
 
         if not member:
+
             message = "Member not found"
 
         elif not member.is_active:
-            message = (
-                f"⚠ {member.name} is Deactivated. "
-                f"Attendance not marked."
-            )
+
+            message = f"⚠ {member.name} is Deactivated."
 
         else:
-            today_attendance = Attendance.query.filter_by(
+
+            today = Attendance.query.filter_by(
                 member_id=member.id,
                 date=date.today()
             ).first()
 
-            if today_attendance:
+            if today:
+
                 message = f"{member.name} already marked present today"
 
             else:
+
                 attendance = Attendance(
                     member_id=member.id
                 )
@@ -626,19 +627,16 @@ def attendance():
                 db.session.commit()
 
                 if member.expiry_date and member.expiry_date < date.today():
-                    message = (
-                        f"⚠ {member.name} attendance marked successfully "
-                        f"but membership expired on {member.expiry_date}"
-                    )
+
+                    message = f"⚠ {member.name} attendance marked but membership expired."
 
                 elif member.remaining_amount > 0:
-                    message = (
-                        f"⚠ {member.name} attendance marked successfully "
-                        f"but fees remaining ₹{member.remaining_amount}"
-                    )
+
+                    message = f"⚠ {member.name} attendance marked but ₹{member.remaining_amount} fees pending."
 
                 else:
-                    message = f"{member.name} attendance marked successfully"
+
+                    message = f"{member.name} attendance marked successfully."
 
     today_records = Attendance.query.filter_by(
         date=date.today()
@@ -651,20 +649,19 @@ def attendance():
     history_records = []
 
     if selected_date:
+
         filter_date = date.fromisoformat(selected_date)
 
         history_records = Attendance.query.filter(
             Attendance.date == filter_date
-        ).order_by(
-            Attendance.date.desc()
         ).all()
 
     return render_template(
         "attendance.html",
         message=message,
         today_records=today_records,
-        history_records=history_records,
         today_count=today_count,
+        history_records=history_records,
         selected_date=selected_date
     )
 @app.route("/pending-members")
