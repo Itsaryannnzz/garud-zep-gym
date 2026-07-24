@@ -145,14 +145,25 @@ Today's Attendance :
     </div>
 </section>
 <script>
-
 window.onload = function(){
 
-    document.querySelector(
-        "input[name='gym_number']"
-    ).focus();
+    const input = document.getElementById("gym_number");
 
-};
+    if(input){
+
+        const x = window.scrollX;
+        const y = window.scrollY;
+
+        input.value = "";
+
+        input.focus();
+
+        window.scrollTo(x, y);
+
+    }
+
+}
+</script>
 
 </script>
 </body>
