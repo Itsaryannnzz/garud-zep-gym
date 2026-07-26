@@ -243,7 +243,7 @@ placeholder="Search by Name, Phone or Plan">
                 <tbody>
 {% for member in members %}
 
-<tr class="
+<tr id="member-{{ member.id }}" class="
 {% if member.expiry_date and member.expiry_date < current_date %}
 pending-row
 
@@ -313,18 +313,11 @@ Receipt
 </a>
 {% if member.remaining_amount > 0 %}
 
-<form
-action="{{ url_for('mark_paid', id=member.id) }}"
-method="POST">
-
 <button
-class="btn btn-success btn-sm mb-2">
-
-Mark Paid
-
+    class="btn btn-success btn-sm mb-2 markPaidBtn"
+    data-id="{{ member.id }}">
+    Mark Paid
 </button>
-
-</form>
 
 {% endif %}
         {% if member.payment_status != "Paid" %}
@@ -396,7 +389,9 @@ Mark Paid
 </tr>
 
 {% endfor %}
+
 </tbody>
+
                 
             </table>
         </div>
@@ -425,7 +420,48 @@ row.innerText.toLowerCase().includes(value)
 });
 
 </script>
+<script>
+document.querySelectorAll(".markPaidBtn").forEach(btn => {
 
+    btn.addEventListener("click", function () {
+
+        const memberId = this.dataset.id;
+        const button = this;
+
+        button.disabled = true;
+        button.innerHTML = "Saving...";
+
+        fetch("/mark-paid/" + memberId, {
+            method: "POST"
+        })
+        .then(res => res.json())
+        .then(data => {
+
+            if (data.success) {
+
+                const row = document.getElementById("member-" + memberId);
+
+                row.cells[6].innerHTML = "₹" + data.cash;
+                row.cells[8].innerHTML = "₹" + data.paid;
+                row.cells[9].innerHTML = "₹0";
+
+                row.cells[10].innerHTML =
+                    '<span class="badge bg-success">Paid</span>';
+
+                button.style.display = "none";
+
+const paymentForm = row.querySelector(".payment-form");
+if (paymentForm){
+    paymentForm.remove();
+}
+            }
+
+        });
+
+    });
+
+});
+</script>
 </body>
 
 </html>

@@ -96,6 +96,34 @@ function updatePlan(){
 </script>
 
 </div>
+<script>
 
+const joinInput = document.getElementById("join_date");
+const planSelect = document.getElementById("plan");
+const expiryInput = document.getElementById("expiry_date");
+
+function updateExpiry(){
+
+    if(joinInput.value==="") return;
+
+    let months=parseInt(
+        planSelect.options[
+            planSelect.selectedIndex
+        ].dataset.months
+    );
+
+    let d=new Date(joinInput.value);
+
+    d.setMonth(d.getMonth()+months);
+
+    expiryInput.value=d.toISOString().split("T")[0];
+}
+
+joinInput.addEventListener("change",updateExpiry);
+planSelect.addEventListener("change",updateExpiry);
+
+window.onload=updateExpiry;
+
+</script>
 </body>
 </html>

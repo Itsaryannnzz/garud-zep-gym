@@ -1,6 +1,8 @@
 
 
-from flask import Flask, render_template, request, redirect, url_for, session
+from enum import member
+
+from flask import Flask, jsonify, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import date, timedelta, datetime
 import calendar
@@ -401,22 +403,39 @@ def delete_member(id):
     return redirect(url_for("owner_dashboard"))
 @app.route("/mark-paid/<int:id>", methods=["POST"])
 def mark_paid(id):
+
     if not session.get("owner_logged_in"):
-        return redirect(url_for("owner_login"))
+        return {"success": False}
 
     member = Member.query.get_or_404(id)
 
     if member.remaining_amount > 0:
 
-        member.cash_paid += member.remaining_amount
-        member.paid_amount += member.remaining_amount
+        amount = member.remaining_amount
 
+        member.cash_paid += amount
+        member.paid_amount += amount
         member.remaining_amount = 0
         member.payment_status = "Paid"
 
+        payment = Payment(
+            member_id=member.id,
+            amount=amount,
+            payment_type="Cash"
+        )
+
+        db.session.add(payment)
         db.session.commit()
 
-    return redirect(url_for("owner_dashboard"))
+    from flask import jsonify
+
+    return jsonify({
+    "success": True,
+    "cash": member.cash_paid,
+    "paid": member.paid_amount,
+    "remaining": member.remaining_amount,
+    "status": member.payment_status
+})
 @app.route("/partial-payment/<int:id>", methods=["POST"])
 def partial_payment(id):
     if not session.get("owner_logged_in"):
