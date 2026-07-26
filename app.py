@@ -417,14 +417,6 @@ def mark_paid(id):
         member.paid_amount += amount
         member.remaining_amount = 0
         member.payment_status = "Paid"
-
-        payment = Payment(
-            member_id=member.id,
-            amount=amount,
-            payment_type="Cash"
-        )
-
-        db.session.add(payment)
         db.session.commit()
 
     from flask import jsonify
