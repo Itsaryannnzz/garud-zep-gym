@@ -79,6 +79,7 @@ class Member(db.Model):
     payment_status = db.Column(db.String(20), default="Pending")
     paid_amount = db.Column(db.Integer, default=0)
     remaining_amount = db.Column(db.Integer, default=0)
+    discount = db.Column(db.Integer, default=0)
     cash_paid = db.Column(db.Integer, default=0)
     online_paid = db.Column(db.Integer, default=0)
     is_active = db.Column(db.Boolean, default=True)
@@ -159,13 +160,12 @@ def register_member():
 
 )
 
-    existing_member = Member.query.filter(
-        (Member.name == request.form["name"]) |
-        (Member.phone == request.form["phone"])
+    existing_member = Member.query.filter_by(
+    name=request.form["name"].strip()
     ).first()
 
     if existing_member:
-        return "Member already exists!"
+        return "Member with same name already exists!"
 
     plan_amount = get_plan_amount(plan)
 
@@ -285,12 +285,33 @@ def owner_dashboard():
 
     members = Member.query.all()
 
+    for member in members:
+
+     if member.expiry_date and member.expiry_date < date.today():
+
+        member.payment_status = "Expired"
+        member.is_active = False
+
+        plan = GymPlan.query.filter_by(name=member.plan).first()
+
+        if plan:
+
+            member.paid_amount = 0
+            member.cash_paid = 0
+            member.online_paid = 0
+
+            member.remaining_amount = max(
+                0,
+                plan.amount - member.discount
+            )
+
+    db.session.commit()
+
     total_members = Member.query.count()
 
-    pending_fees = sum(
-        member.remaining_amount
-        for member in members
-    )
+    pending_members = Member.query.filter(
+    Member.remaining_amount > 0
+).count()
 
     expiring_members = Member.query.filter(
         Member.expiry_date.isnot(None),
@@ -357,7 +378,7 @@ def owner_dashboard():
         "owner-dashboard.html",
         members=members,
         total_members=total_members,
-        pending_fees=pending_fees,
+        pending_members=pending_members,
         total_fees=total_fees,
         expiry_alerts=expiry_alerts,
         expiring_members=expiring_members,
@@ -415,6 +436,7 @@ def mark_paid(id):
 
         member.cash_paid += amount
         member.paid_amount += amount
+
         member.remaining_amount = 0
         member.payment_status = "Paid"
         db.session.commit()
@@ -516,67 +538,150 @@ def activate_member(id):
 
 @app.route("/edit-member/<int:id>", methods=["GET", "POST"])
 def edit_member(id):
+
     if not session.get("owner_logged_in"):
         return redirect(url_for("owner_login"))
 
     member = Member.query.get_or_404(id)
 
+    renew = request.args.get("renew")
+
     if request.method == "POST":
 
-        was_expired = (
-            member.expiry_date is not None
-            and member.expiry_date <= date.today()
-        )
-        member.phone = request.form["phone"]
+        new_name = request.form["name"].strip()
+
+        existing = Member.query.filter(
+            Member.name == new_name,
+            Member.id != member.id
+        ).first()
+
+        if existing:
+            return "Member with same name already exists."
+
+        member.name = new_name
+        member.phone = request.form["phone"].strip()
         member.plan = request.form["plan"]
-        member.join_date = date.fromisoformat(request.form["join_date"])
+
+        member.join_date = date.fromisoformat(
+            request.form["join_date"]
+        )
+
         member.expiry_date = date.fromisoformat(
-    request.form["expiry_date"]
-)
+            request.form["expiry_date"]
+        )
 
-        discount = int(
-    request.form.get("discount") or 0
-)
+        discount = int(request.form.get("discount") or 0)
 
-        plan_amount = get_plan_amount(member.plan) - discount
+        member.discount = discount
 
-        if plan_amount < 0:
-         plan_amount = 0
+        plan_amount = get_plan_amount(
+            member.plan
+        )
 
-        if was_expired:
+        final_amount = max(0, plan_amount - member.discount)
+
+        cash_now = int(
+            request.form.get("cash_amount") or 0
+        )
+
+        online_now = int(
+            request.form.get("online_amount") or 0
+        )
+
+        payment_now = cash_now + online_now
+
+        # ------------------------
+        # RENEW LOGIC
+        # ------------------------
+
+        if request.form.get("renew") == "1":
+
             member.cash_paid = 0
             member.online_paid = 0
             member.paid_amount = 0
-            member.remaining_amount = plan_amount
+
+            member.remaining_amount = final_amount
             member.payment_status = "Pending"
-            member.is_active = True
-        else:
-            member.remaining_amount = max(
-                0,
-                plan_amount - member.paid_amount
+
+        # ------------------------
+
+        if payment_now > member.remaining_amount:
+            return (
+                f"Payment cannot exceed Remaining Amount ₹{member.remaining_amount}"
             )
 
-            if member.remaining_amount <= 0:
-                member.remaining_amount = 0
-                member.payment_status = "Paid"
+        if cash_now > 0:
 
-            elif member.paid_amount > 0:
-                member.payment_status = "Partial"
+            db.session.add(
+                Payment(
+                    member_id=member.id,
+                    amount=cash_now,
+                    payment_type="Cash"
+                )
+            )
 
-            else:
-                member.payment_status = "Pending"
+            member.cash_paid += cash_now
+
+        if online_now > 0:
+
+            db.session.add(
+                Payment(
+                    member_id=member.id,
+                    amount=online_now,
+                    payment_type="Online"
+                )
+            )
+
+            member.online_paid += online_now
+
+        member.paid_amount = (
+            member.cash_paid +
+            member.online_paid
+        )
+
+        member.remaining_amount = max(
+            0,
+            final_amount - member.paid_amount
+        )
+
+        if member.remaining_amount == 0:
+            member.payment_status = "Paid"
+
+        elif member.paid_amount > 0:
+            member.payment_status = "Partial"
+
+        else:
+            member.payment_status = "Pending"
+
+        member.is_active = True
 
         db.session.commit()
 
-        return redirect(url_for("owner_dashboard"))
+        return redirect(
+            url_for("owner_dashboard")
+        )
+
+    # -----------------------------
+    # DATA SENT TO HTML
+    # -----------------------------
+
+    if renew == "1":
+
+        member.paid_amount = 0
+        member.cash_paid = 0
+        member.online_paid = 0
+
+        member.remaining_amount = get_plan_amount(
+            member.plan
+        )
 
     return render_template(
-    "edit-member.html",
-    member=member,
-    renew=request.args.get("renew"),
-    current_date=date.today(),
-    plans=GymPlan.query.all()
-)
+        "edit-member.html",
+        member=member,
+        renew=renew,
+        current_date=date.today(),
+        plans=GymPlan.query.all()
+    )
 @app.route("/backup")
 def backup():
     if not session.get("owner_logged_in"):

@@ -9,29 +9,44 @@
 
 <div class="container mt-5">
 
-    <h2>Edit Member</h2>
+<h2>Edit Member</h2>
 
-    <form method="POST">
+<form method="POST">
 
-        <label>Plan</label>
+<input
+type="hidden"
+name="renew"
+value="{{ renew }}">
 
-<select id="plan"
-        name="plan"
-        class="form-control mb-3"
-        
-        required>
+<label>Plan</label>
 
-    {% for plan in plans %}
-    <option value="{{ plan.name }}"
-            data-months="{{ plan.months }}"
-            {% if member.plan == plan.name %}selected{% endif %}>
-        {{ plan.name }} - ₹{{ plan.amount }} / {{ plan.months }} Month
-    </option>
-    {% endfor %}
+<select
+id="plan"
+name="plan"
+class="form-control mb-3"
+required>
+
+{% for plan in plans %}
+<option
+value="{{ plan.name }}"
+data-months="{{ plan.months }}"
+{% if member.plan == plan.name %}selected{% endif %}>
+{{ plan.name }} - ₹{{ plan.amount }} / {{ plan.months }} Month
+</option>
+{% endfor %}
 
 </select>
 
-        <label>Phone Number</label>
+<label>Name</label>
+
+<input
+type="text"
+name="name"
+class="form-control mb-3"
+value="{{ member.name }}"
+required>
+
+<label>Phone Number</label>
 
 <input
 type="text"
@@ -41,89 +56,349 @@ value="{{ member.phone }}"
 required>
 
 <label>Start Date</label>
-        <input type="date"
-       id="join_date"
-       name="join_date"
-       
-               value="{% if renew %}{{ current_date }}{% else %}{{ member.join_date }}{% endif %}" required>
-<label>Discount</label>
-<select name="discount"
-        class="form-control mb-3">
-    <option value="0">₹0</option>
-    <option value="100">₹100</option>
-    <option value="200">₹200</option>
-    <option value="300">₹300</option>
-    <option value="400">₹400</option>
-    <option value="500">₹500</option>
-    <option value="600">₹600</option>
-    <option value="700">₹700</option>
-    <option value="800">₹800</option>
-    <option value="900">₹900</option>
+
+<input
+type="date"
+id="join_date"
+name="join_date"
+value="{% if renew %}{{ current_date }}{% else %}{{ member.join_date }}{% endif %}"
+required>
+
+{% if member.remaining_amount > 0 %}
+
+<label id="discountLabel">Discount</label>
+
+<select
+name="discount"
+class="form-control mb-3"
+id="discountBox">
+
+<option value="0" {% if member.discount==0 %}selected{% endif %}>₹0</option>
+<option value="100" {% if member.discount==100 %}selected{% endif %}>₹100</option>
+<option value="200" {% if member.discount==200 %}selected{% endif %}>₹200</option>
+<option value="300" {% if member.discount==300 %}selected{% endif %}>₹300</option>
+<option value="400" {% if member.discount==400 %}selected{% endif %}>₹400</option>
+<option value="500" {% if member.discount==500 %}selected{% endif %}>₹500</option>
+<option value="600" {% if member.discount==600 %}selected{% endif %}>₹600</option>
+<option value="700" {% if member.discount==700 %}selected{% endif %}>₹700</option>
+<option value="800" {% if member.discount==800 %}selected{% endif %}>₹800</option>
+<option value="900" {% if member.discount==900 %}selected{% endif %}>₹900</option>
+
 </select>
-        <label>Expiry Date</label>
-        <input type="date"
-       id="expiry_date"
-       name="expiry_date"
-               value="{{ member.expiry_date }}" required>
 
-        <button class="btn btn-success">Save</button>
+{% else %}
 
-        <a href="{{ url_for('owner_dashboard') }}"
-           class="btn btn-secondary">
-           Cancel
-        </a>
+<input type="hidden" name="discount" value="0">
 
-    </form>
-    <script>
-function updatePlan(){
+{% endif %}
 
-    let planSelect = document.getElementById("plan");
-    let months = parseInt(
-        planSelect.options[planSelect.selectedIndex].getAttribute("data-months")
-    );
+{% if member.remaining_amount > 0 %}
 
-    let join = document.getElementById("join_date").value;
+<label id="cashLabel">Cash Payment</label>
 
-    if(join == "") return;
+<input
+type="number"
+name="cash_amount"
+class="form-control mb-3"
+value="0"
+min="0"
+placeholder="Cash Amount">
 
-    let d = new Date(join);
+<label id="onlineLabel">Online Payment</label>
 
-    d.setMonth(d.getMonth() + months);
+<input
+type="number"
+name="online_amount"
+class="form-control mb-3"
+value="0"
+min="0"
+max="{{ member.remaining_amount }}"
+placeholder="Online Amount">
 
-    document.getElementById("expiry_date").value =
-        d.toISOString().substring(0,10);
-}
-</script>
+{% else %}
+
+<input type="hidden" name="cash_amount" value="0">
+<input type="hidden" name="online_amount" value="0">
+
+{% endif %}
+
+<div class="alert alert-info">
+
+<strong>Total Paid :</strong>
+₹<span id="paidAmount">
+{% if renew %}
+0
+{% else %}
+{{ member.paid_amount }}
+{% endif %}
+</span>
+
+<br>
+
+<strong>Remaining :</strong>
+₹<span id="remainingAmount">
+{% if renew %}
+0
+{% else %}
+{{ member.remaining_amount }}
+{% endif %}
+</span>
 
 </div>
+
+<label>Expiry Date</label>
+
+<input
+type="date"
+id="expiry_date"
+name="expiry_date"
+value="{{ member.expiry_date }}"
+required>
+
+<div class="mt-4">
+
+{% if member.remaining_amount > 0 %}
+<button
+type="button"
+id="markPaidBtn"
+class="btn btn-success"
+onclick="markPaid({{ member.id }})">
+Mark Paid
+</button>
+{% endif %}
+
+<button
+type="submit"
+class="btn btn-primary">
+Save
+</button>
+
+<a
+href="{{ url_for('owner_dashboard') }}"
+class="btn btn-secondary">
+Cancel
+</a>
+
+</div>
+
+</form>
+
 <script>
 
 const joinInput = document.getElementById("join_date");
 const planSelect = document.getElementById("plan");
 const expiryInput = document.getElementById("expiry_date");
 
+let paidAmount = parseInt(
+    document.getElementById("paidAmount").innerText
+);
+
 function updateExpiry(){
 
-    if(joinInput.value==="") return;
+    if(joinInput.value=="") return;
 
-    let months=parseInt(
+    let months = parseInt(
         planSelect.options[
             planSelect.selectedIndex
         ].dataset.months
     );
 
-    let d=new Date(joinInput.value);
+    let d = new Date(joinInput.value);
 
-    d.setMonth(d.getMonth()+months);
+    d.setMonth(d.getMonth() + months);
 
-    expiryInput.value=d.toISOString().split("T")[0];
+    expiryInput.value =
+        d.toISOString().split("T")[0];
+
 }
 
-joinInput.addEventListener("change",updateExpiry);
-planSelect.addEventListener("change",updateExpiry);
+function updateRemaining(){
 
-window.onload=updateExpiry;
+    let selectedOption =
+        planSelect.options[
+            planSelect.selectedIndex
+        ];
+
+    let planAmount = parseInt(
+        selectedOption.text
+        .split("₹")[1]
+        .split("/")[0]
+    );
+
+    let discount = 0;
+
+const discountSelect = document.querySelector("select[name='discount']");
+
+if(discountSelect){
+    discount = parseInt(discountSelect.value);
+}
+
+    let renew =
+        document.querySelector(
+            "input[name='renew']"
+        ).value;
+
+    let remaining;
+
+    if(renew=="1"){
+
+        remaining = planAmount - discount;
+
+        paidAmount = 0;
+
+        document.getElementById(
+            "paidAmount"
+        ).innerText = 0;
+
+    }
+    else{
+
+        remaining =
+            planAmount
+            - discount
+            - paidAmount;
+
+    }
+
+    if(remaining < 0){
+        remaining = 0;
+    }
+
+    document.getElementById(
+        "remainingAmount"
+    ).innerText = remaining;
+
+    const cashBox = document.querySelector("input[name='cash_amount']");
+const onlineBox = document.querySelector("input[name='online_amount']");
+
+if(cashBox) cashBox.max = remaining;
+if(onlineBox) onlineBox.max = remaining;
+
+    if(remaining==0){
+        document.getElementById("discountLabel").style.display="none";
+document.getElementById("discountBox").style.display="none";
+
+        if(cashBox) cashBox.style.display="none";
+if(onlineBox) onlineBox.style.display="none";
+
+const cashLabel = document.getElementById("cashLabel");
+const onlineLabel = document.getElementById("onlineLabel");
+
+if(cashLabel) cashLabel.style.display="none";
+if(onlineLabel) onlineLabel.style.display="none";
+
+        let btn =
+            document.getElementById(
+                "markPaidBtn"
+            );
+
+        if(btn){
+            btn.style.display="none";
+        }
+
+    }
+    else{
+        document.getElementById("discountLabel").style.display="block";
+document.getElementById("discountBox").style.display="block";
+
+        if(cashBox) cashBox.style.display="block";
+if(onlineBox) onlineBox.style.display="block";
+
+const cashLabel = document.getElementById("cashLabel");
+const onlineLabel = document.getElementById("onlineLabel");
+
+if(cashLabel) cashLabel.style.display="block";
+if(onlineLabel) onlineLabel.style.display="block";
+
+        let btn =
+            document.getElementById(
+                "markPaidBtn"
+            );
+
+        if(btn){
+            btn.style.display="inline-block";
+        }
+
+    }
+
+}
+
+joinInput.addEventListener(
+    "change",
+    function(){
+
+        updateExpiry();
+        updateRemaining();
+
+    }
+);
+
+planSelect.addEventListener(
+    "change",
+    function(){
+
+        updateExpiry();
+        updateRemaining();
+
+    }
+);
+
+const discountBox = document.querySelector("select[name='discount']");
+
+if(discountBox){
+    discountBox.addEventListener("change", updateRemaining);
+}
+
+window.onload=function(){
+
+    updateExpiry();
+    updateRemaining();
+
+};
+
+function markPaid(id){
+
+    if(!confirm("Mark member as Paid?")){
+        return;
+    }
+
+    fetch("/mark-paid/"+id,{
+        method:"POST"
+    })
+
+    .then(res=>res.json())
+
+    .then(data=>{
+
+        if(data.success){
+
+            paidAmount = data.paid;
+
+            document.getElementById(
+                "paidAmount"
+            ).innerText = data.paid;
+
+            document.getElementById(
+                "remainingAmount"
+            ).innerText = data.remaining;
+
+            const cashInput = document.querySelector("input[name='cash_amount']");
+const onlineInput = document.querySelector("input[name='online_amount']");
+
+if(cashInput) cashInput.value = "";
+if(onlineInput) onlineInput.value = "";
+
+            updateRemaining();
+
+            window.location.href = "/owner-dashboard";
+
+        }
+
+    });
+
+}
 
 </script>
+
 </body>
 </html>

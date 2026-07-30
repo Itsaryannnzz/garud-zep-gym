@@ -110,11 +110,11 @@ selected
                     <h3>
 <a href="{{ url_for('pending_members') }}"
 style="color:white;text-decoration:none;">
-{{ pending_fees }}
+{{ pending_members }}
 </a>
 </h3>
 
-<p>Pending Fees</p>
+<p>Pending members</p>
                 </div>
             </div>
 
@@ -311,45 +311,6 @@ Receipt
    class="btn btn-primary btn-sm mb-1">
    Edit
 </a>
-{% if member.remaining_amount > 0 %}
-
-<button
-    class="btn btn-success btn-sm mb-2 markPaidBtn"
-    data-id="{{ member.id }}">
-    Mark Paid
-</button>
-
-{% endif %}
-        {% if member.payment_status != "Paid" %}
-
-<form action="{{ url_for('partial_payment', id=member.id) }}"
-      method="POST"
-      class="payment-form mb-2">
-
-    <input type="number"
-       name="cash_amount"
-       class="form-control form-control-sm payment-input mb-1"
-       placeholder="Cash ₹"
-       min="0">
-       
-
-    <input type="number"
-       name="online_amount"
-       class="form-control form-control-sm payment-input mb-1"
-       placeholder="Online ₹"
-       min="0"
-       >
-
-    <button class="btn btn-info btn-sm w-100">
-        Add
-    </button>
-
-</form>
-
-{% endif %}
-        
-
-        
 
         
 
@@ -420,48 +381,7 @@ row.innerText.toLowerCase().includes(value)
 });
 
 </script>
-<script>
-document.querySelectorAll(".markPaidBtn").forEach(btn => {
 
-    btn.addEventListener("click", function () {
-
-        const memberId = this.dataset.id;
-        const button = this;
-
-        button.disabled = true;
-        button.innerHTML = "Saving...";
-
-        fetch("/mark-paid/" + memberId, {
-            method: "POST"
-        })
-        .then(res => res.json())
-        .then(data => {
-
-            if (data.success) {
-
-                const row = document.getElementById("member-" + memberId);
-
-                row.cells[6].innerHTML = "₹" + data.cash;
-                row.cells[8].innerHTML = "₹" + data.paid;
-                row.cells[9].innerHTML = "₹0";
-
-                row.cells[10].innerHTML =
-                    '<span class="badge bg-success">Paid</span>';
-
-                button.style.display = "none";
-
-const paymentForm = row.querySelector(".payment-form");
-if (paymentForm){
-    paymentForm.remove();
-}
-            }
-
-        });
-
-    });
-
-});
-</script>
 </body>
 
 </html>
